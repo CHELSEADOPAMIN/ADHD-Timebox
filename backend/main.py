@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
+import os
 import json
 
 # 引入 ConnectOnion
@@ -23,14 +24,36 @@ def get_current_datetime() -> str:
     return now.strftime("当前本地时间：%Y-%m-%d %H:%M:%S %Z (UTC%z)")
 
 
-def save_daily_plan(plan_content: str) -> str:
+def save_structured_plan(tasks_json: str) -> str:
     """
-    当用户完全同意今天的计划后，调用此工具保存计划。
+    保存结构化的今日任务列表，供执行 Agent 读取。
+    Args:
+        tasks_json: JSON 字符串列表。
+        格式示例：
+        [
+            {"id": "task_1", "title": "撰写周报", "start": "14:00", "end": "14:30", "type": "work"},
+            {"id": "task_2", "title": "洗衣服", "start": "14:30", "end": "15:00", "type": "chore"}
+        ]
     """
     date = datetime.date.today().isoformat()
-    # 将计划写入记忆，方便以后回顾
-    memory.write_memory(f"plan_{date}", plan_content)
-    return f"✅ 计划已锁定！已保存到 {date} 的时间盒中。祝你今天专注！"
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    adhd_dir = os.path.join(base_dir, "adhd_brain")
+    os.makedirs(adhd_dir, exist_ok=True)
+
+    try:
+        tasks = json.loads(tasks_json)
+        if not isinstance(tasks, list):
+            raise ValueError("tasks_json 应该是任务列表。")
+    except Exception as e:
+        return f"❌ 保存失败：请传入 JSON 列表字符串。错误: {e}"
+
+    path = os.path.join(adhd_dir, f"daily_tasks_{date}.json")
+    with open(path, "w") as f:
+        json.dump(tasks, f, ensure_ascii=False, indent=2)
+
+    # 记录一次摘要到 Memory，便于追踪保存历史
+    memory.write_memory(f"plan_{date}_structured", f"Saved {len(tasks)} tasks to {path}")
+    return f"✅ 结构化计划已保存，共 {len(tasks)} 条任务，路径：{path}"
 
 
 def get_legacy_tasks() -> str:
@@ -79,11 +102,8 @@ system_prompt = """
 ## 交互原则：
 - **必须获得同意**：在你整理完清单和时间表后，必须问用户：“这样安排可以吗？还是需要调整？”
 - **只有用户明确同意后**，执行以下操作：
-  1. 调用 `save_daily_plan` 工具保存文本计划。
-  2. **关键步骤**：调用 `GoogleCalendar` 工具，将每个时间盒（Timebox）创建为真实的日历事件。
-     - 确保事件标题清晰（如 "【时间盒】撰写周报"）。
-     - 设置具体的时间段（Start Time - End Time）。
-     - 如果可能，为每个事件添加“强提醒”（如提前10分钟提醒）。
+  1. 调用 `GoogleCalendar.create_event`（带确认）同步到日历，保持事件时间与文本一致。
+  2. 调用 `save_structured_plan`，以 JSON 列表字符串保存今日任务，字段需能反映日历中的开始/结束时间，确保两边一致。
 - 语气要像朋友一样支持，不要像教官一样严厉。ADHD 用户需要鼓励。
 
 
@@ -105,7 +125,7 @@ agent = Agent(
     name="timebox_coach",
     model="co/gemini-2.5-pro",  # 使用性价比高的模型，或者换成 co/gpt-5
     system_prompt=system_prompt,
-    tools=[memory, save_daily_plan, get_legacy_tasks, get_current_datetime, calendar],
+    tools=[memory, save_structured_plan, get_legacy_tasks, get_current_datetime, calendar],
 )
 
 # --- 4. 运行 ---
