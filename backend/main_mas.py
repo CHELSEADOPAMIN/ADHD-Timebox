@@ -1,11 +1,18 @@
 """Phase 1 entrypoint for the MAS orchestrator."""
 
+import os
+from dotenv import load_dotenv
+
+# 加载 .env 环境变量
+base_dir = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(base_dir, ".env"))
+
 from agents.orchestrator import OrchestratorAgent
 
 
 def main():
     orchestrator = OrchestratorAgent()
-    print("🛡️ 多智能体系统 (Phase 1) 已启动...")
+    print("时间盒助手启动 今日首次登录请输入今天的计划吧！")
     while True:
         user_input = input("\n你: ").strip()
         if user_input.lower() in {"q", "quit", "exit"}:
