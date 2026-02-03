@@ -66,7 +66,7 @@ def main():
     idle_watcher.start()
 
     print("\n" + "=" * 40)
-    print("🤖 ADHD Timebox Assistant (MAS) started")
+    print("🤖 ADHD Tymebox Assistant (MAS) started")
     print("=" * 40)
     print("I can help you stay focused and reduce cognitive load:")
     print("1. 📅 Plan: type 'today I need to...' or 'delay the meeting by 10 minutes'")

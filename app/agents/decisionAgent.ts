@@ -1,13 +1,13 @@
 import {
   Task,
-  TimeBoxRecommendation,
+  TymeboxRecommendation,
   DecisionAgentContext,
-  TimeBoxOutcome,
+  TymeboxOutcome,
 } from "../types";
 
 // Decision Agent 接口
 export interface IDecisionAgent {
-  recommend(context: DecisionAgentContext): Promise<TimeBoxRecommendation>;
+  recommend(context: DecisionAgentContext): Promise<TymeboxRecommendation>;
 }
 
 /**
@@ -17,7 +17,7 @@ export interface IDecisionAgent {
 export class APIDecisionAgent implements IDecisionAgent {
   async recommend(
     context: DecisionAgentContext
-  ): Promise<TimeBoxRecommendation> {
+  ): Promise<TymeboxRecommendation> {
     // Backend recommendation endpoint is not available yet.
     return new DefaultDecisionAgent().recommend(context);
   }
@@ -29,7 +29,7 @@ export class APIDecisionAgent implements IDecisionAgent {
 export class DefaultDecisionAgent implements IDecisionAgent {
   async recommend(
     context: DecisionAgentContext
-  ): Promise<TimeBoxRecommendation> {
+  ): Promise<TymeboxRecommendation> {
     const { tasks, outcomes, preferLowCognitiveLoad } = context;
 
     if (tasks.length === 0) {
@@ -56,7 +56,7 @@ export class DefaultDecisionAgent implements IDecisionAgent {
 
   private filterAvailableTasks(
     tasks: Task[],
-    outcomes: TimeBoxOutcome[]
+    outcomes: TymeboxOutcome[]
   ): Task[] {
     const completedTaskIds = new Set(
       outcomes
@@ -70,7 +70,7 @@ export class DefaultDecisionAgent implements IDecisionAgent {
   private selectTask(
     tasks: Task[],
     preferLowCognitiveLoad?: boolean
-  ): TimeBoxRecommendation {
+  ): TymeboxRecommendation {
     let selectedTask: Task;
     let reason: string;
 

@@ -309,7 +309,7 @@ const HeaderBar = ({
             isDark ? "text-slate-100" : "text-slate-800"
           }`}
         >
-          TimeBox
+          Tymebox
         </h1>
         <p
           className={`text-xs font-bold tracking-wider uppercase ${
@@ -560,8 +560,8 @@ const PausedBanner = ({
   );
 };
 
-// 4. TimeBoxSelector
-const TimeBoxSelector = ({
+// 4. TymeboxSelector
+const TymeboxSelector = ({
   selected,
   onSelect,
   disabled,
@@ -735,7 +735,7 @@ const CurrentFocusCard = ({
               )}
             </h2>
 
-            <TimeBoxSelector
+            <TymeboxSelector
               selected={selectedDuration}
               onSelect={actions.setDuration}
               disabled={false}
@@ -1222,7 +1222,7 @@ const DailyReview = ({
 ===========================================================================
 */
 
-export default function TimeBoxApp() {
+export default function TymeboxApp() {
   const {
     focusState,
     remainingSeconds,

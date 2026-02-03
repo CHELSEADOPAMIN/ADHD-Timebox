@@ -21,7 +21,7 @@ def get_orchestrator():
 
 # Define the main agent
 # Removed 'description' as it caused TypeError
-agent = Agent(name="adhd-timebox", model="co/gemini-2.5-pro")
+agent = Agent(name="adhd-tymebox", model="co/gemini-2.5-pro")
 
 
 # Custom handler to bridge ConnectOnion host with Orchestrator logic

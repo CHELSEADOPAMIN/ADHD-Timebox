@@ -9,7 +9,7 @@ const _inter = Inter({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ADHD Timebox Assistant",
+  title: "ADHD Tymebox Assistant",
   description:
     "A calm companion for focus. Start tasks, stay present, handle interruptions safely.",
   generator: "v0.app",

@@ -93,7 +93,7 @@ export function FocusMode() {
         startedAt: undefined,
         completedAt: undefined,
       });
-      // Show end-of-timebox ritual (handled by parent via state)
+      // Show end-of-tymebox ritual (handled by parent via state)
       setUserState("interrupted");
     }
   }, [

@@ -26,7 +26,7 @@ debug_log(">>> plan_tools_v2 module loaded <<<")
 class PlanManager:
     """
     Manage daily_tasks_YYYY-MM-DD.json read/write and conflict detection.
-    Goal: provide PlannerAgent with reliable context and timebox adjustments.
+    Goal: provide PlannerAgent with reliable context and tymebox adjustments.
     """
 
     def __init__(self, plan_dir: Optional[str] = None, calendar=None):

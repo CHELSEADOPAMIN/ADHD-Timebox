@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ADHD Timebox Agent is an AI-powered task management system for ADHD users, built on the "Timeboxing" methodology. It uses a multi-agent architecture with planning, focus tracking, distraction management, and reward mechanisms.
+ADHD Tymebox Agent is an AI-powered task management system for ADHD users, built on the "Tymeboxing" methodology. It uses a multi-agent architecture with planning, focus tracking, distraction management, and reward mechanisms.
 
 **Tech Stack:**
 - Frontend: Next.js 16, React 19, TypeScript, Tailwind CSS 4, Zustand (state), Radix UI
@@ -41,7 +41,7 @@ Run both servers simultaneously:
 ### Multi-Agent System
 ```
 User Input → OrchestratorAgent → Routes to:
-                                  ├── PlannerAgent (task scheduling, timeboxing)
+                                  ├── PlannerAgent (task scheduling, tymeboxing)
                                   ├── FocusAgent (execution coaching, distraction handling)
                                   └── RewardAgent (completion celebrations)
 ```
@@ -56,7 +56,7 @@ User Input → OrchestratorAgent → Routes to:
 
 ### Backend Structure (`backend/`)
 - `agents/orchestrator.py` - Central router with intent classification and state locking
-- `agents/planner_agent.py` - Task scheduling (15/30/60 min timeboxes), Google Calendar sync
+- `agents/planner_agent.py` - Task scheduling (15/30/60 min tymeboxes), Google Calendar sync
 - `agents/focus_agent.py` - Execution coach, distraction detection, micro-step suggestions
 - `agents/reward_agent.py` - Celebration on task completion (ASCII art via cowsay)
 - `tools/plan_tools_v2.py` - PlanManager: task CRUD, JSON persistence

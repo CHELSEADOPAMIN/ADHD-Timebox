@@ -1,4 +1,4 @@
-"""FastAPI server entrypoint for ADHD Timebox."""
+"""FastAPI server entrypoint for ADHD Tymebox."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from agents.orchestrator import OrchestratorAgent
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="ADHD Timebox API")
+    app = FastAPI(title="ADHD Tymebox API")
 
     app.add_middleware(
         CORSMiddleware,

@@ -2,7 +2,7 @@
 
 ---
 
-## ADHD Timebox 前后端连接方案
+## ADHD Tymebox 前后端连接方案
 
 ### 一、目标
 

@@ -1,16 +1,16 @@
-interface TimeBoxSelectorProps {
+interface TymeboxSelectorProps {
   selected: number;
   onSelect: (minutes: number) => void;
   disabled: boolean;
   isDark: boolean;
 }
 
-export const TimeBoxSelector = ({
+export const TymeboxSelector = ({
   selected,
   onSelect,
   disabled,
   isDark,
-}: TimeBoxSelectorProps) => {
+}: TymeboxSelectorProps) => {
   const options = [15, 30, 45, 60];
   return (
     <div

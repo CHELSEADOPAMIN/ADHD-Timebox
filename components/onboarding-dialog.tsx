@@ -13,7 +13,7 @@ const steps = [
   {
     title: "How it works",
     content:
-      "You'll work in short timeboxes. One task at a time. The goal is to try, not to be perfect.",
+      "You'll work in short tymeboxes. One task at a time. The goal is to try, not to be perfect.",
   },
   {
     title: "Interruptions happen",

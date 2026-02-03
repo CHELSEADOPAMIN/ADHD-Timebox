@@ -114,7 +114,7 @@ export function InterruptedMode() {
             {/* Task summary */}
             <div className="mb-8 text-center">
               <h2 className="text-xl font-medium text-foreground mb-2">
-                Time's up on this timebox
+                Time's up on this tymebox
               </h2>
               <p className="text-muted-foreground">
                 How did it go with "{currentTask.title}"?
@@ -195,7 +195,7 @@ export function InterruptedMode() {
                 {rewardMessage}
               </p>
               <p className="text-muted-foreground">
-                {selectedOutcome === "finished" && "You completed your timebox."}
+                {selectedOutcome === "finished" && "You completed your tymebox."}
                 {selectedOutcome === "partial" && "Progress is progress."}
                 {selectedOutcome === "stuck" && "Sometimes that happens. It's okay."}
               </p>

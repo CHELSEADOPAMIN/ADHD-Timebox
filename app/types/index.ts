@@ -50,17 +50,17 @@ export type FocusAction =
 // Event Types - 前端发送给 Orchestrator 的事件
 export const ORCHESTRATOR_EVENTS = {
   APP_START: "APP_START",
-  TIMEBOX_STARTED: "TIMEBOX_STARTED",
-  TIMEBOX_ENDED: "TIMEBOX_ENDED",
-  TIMEBOX_INTERRUPTED: "TIMEBOX_INTERRUPTED",
+  TYMEBOX_STARTED: "TYMEBOX_STARTED",
+  TYMEBOX_ENDED: "TYMEBOX_ENDED",
+  TYMEBOX_INTERRUPTED: "TYMEBOX_INTERRUPTED",
   REQUEST_NEW: "REQUEST_NEW",
 } as const;
 
 export type OrchestratorEventType =
   (typeof ORCHESTRATOR_EVENTS)[keyof typeof ORCHESTRATOR_EVENTS];
 
-// TimeBox - 单个时间盒
-export interface TimeBox {
+// Tymebox - 单个时间盒
+export interface Tymebox {
   id: string;
   taskId: string;
   durationMinutes: number;
@@ -68,9 +68,9 @@ export interface TimeBox {
   endedAt?: string;
 }
 
-// TimeBox Outcome - 时间盒结果
-export interface TimeBoxOutcome {
-  timeBoxId: string;
+// Tymebox Outcome - 时间盒结果
+export interface TymeboxOutcome {
+  tymeboxId: string;
   taskId: string;
   durationMinutes: number;
   actualMinutes: number;
@@ -79,7 +79,7 @@ export interface TimeBoxOutcome {
 }
 
 // Decision Agent 推荐 - Agent 返回的推荐
-export interface TimeBoxRecommendation {
+export interface TymeboxRecommendation {
   taskId: string;
   durationMinutes: number;
   reason?: string;
@@ -89,11 +89,11 @@ export interface TimeBoxRecommendation {
 // Orchestrator State - 编排器管理的状态
 export interface OrchestratorState {
   // 当前活跃的时间盒
-  activeTimeBox: TimeBox | null;
+  activeTymebox: Tymebox | null;
   // Decision Agent 的推荐
-  recommendation: TimeBoxRecommendation | null;
+  recommendation: TymeboxRecommendation | null;
   // 历史结果
-  outcomes: TimeBoxOutcome[];
+  outcomes: TymeboxOutcome[];
   // 可用任务池
   tasks: Task[];
   // 是否正在加载推荐
@@ -105,18 +105,18 @@ export interface AppStartPayload {
   tasks: Task[];
 }
 
-export interface TimeBoxStartedPayload {
+export interface TymeboxStartedPayload {
   taskId: string;
   durationMinutes: number;
 }
 
-export interface TimeBoxEndedPayload {
+export interface TymeboxEndedPayload {
   taskId: string;
   durationMinutes: number;
   actualMinutes: number;
 }
 
-export interface TimeBoxInterruptedPayload {
+export interface TymeboxInterruptedPayload {
   taskId: string;
   durationMinutes: number;
   elapsedMinutes: number;
@@ -135,18 +135,18 @@ export type OrchestratorEvent =
       state: OrchestratorState;
     }
   | {
-      event: typeof ORCHESTRATOR_EVENTS.TIMEBOX_STARTED;
-      payload: TimeBoxStartedPayload;
+      event: typeof ORCHESTRATOR_EVENTS.TYMEBOX_STARTED;
+      payload: TymeboxStartedPayload;
       state: OrchestratorState;
     }
   | {
-      event: typeof ORCHESTRATOR_EVENTS.TIMEBOX_ENDED;
-      payload: TimeBoxEndedPayload;
+      event: typeof ORCHESTRATOR_EVENTS.TYMEBOX_ENDED;
+      payload: TymeboxEndedPayload;
       state: OrchestratorState;
     }
   | {
-      event: typeof ORCHESTRATOR_EVENTS.TIMEBOX_INTERRUPTED;
-      payload: TimeBoxInterruptedPayload;
+      event: typeof ORCHESTRATOR_EVENTS.TYMEBOX_INTERRUPTED;
+      payload: TymeboxInterruptedPayload;
       state: OrchestratorState;
     }
   | {
@@ -163,7 +163,7 @@ export interface OrchestratorOutput {
 // Decision Agent Context - 传递给 Decision Agent 的上下文
 export interface DecisionAgentContext {
   tasks: Task[];
-  outcomes: TimeBoxOutcome[];
+  outcomes: TymeboxOutcome[];
   currentTime: string;
   preferLowCognitiveLoad?: boolean;
 }

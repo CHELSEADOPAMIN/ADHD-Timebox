@@ -13,6 +13,7 @@ import { ThoughtParkingSheet } from "./thought-parking-sheet";
 import { OnboardingDialog } from "./onboarding-dialog";
 import { Sidebar } from "./sidebar";
 import { UserButton, useUser } from "@clerk/nextjs";
+import { LogoLockup } from "./logo-lockup";
 
 export function AppShell() {
   const { userId } = useUser();
@@ -34,7 +35,7 @@ export function AppShell() {
     if (!hasHydrated) return;
     const lastUserId = lastUserIdRef.current;
     if (lastUserId && lastUserId !== userId) {
-      localStorage.removeItem("adhd-timebox-storage");
+      localStorage.removeItem("adhd-tymebox-storage");
       setTasks([]);
       setCurrentTask(null);
       clearPlanningMessages();
@@ -103,17 +104,7 @@ export function AppShell() {
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="flex h-14 items-center justify-between px-4 lg:px-6">
           <div className="flex items-center gap-3">
-            <span className="sr-only">Timebox</span>
-            <img
-              src="/icon-light-32x32.png"
-              alt=""
-              className="h-6 w-6 dark:hidden"
-            />
-            <img
-              src="/icon-dark-32x32.png"
-              alt=""
-              className="hidden h-6 w-6 dark:block"
-            />
+            <LogoLockup />
           </div>
           <div className="flex items-center gap-3">
             <StateIndicator />

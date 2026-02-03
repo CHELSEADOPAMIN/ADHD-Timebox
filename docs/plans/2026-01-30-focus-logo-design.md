@@ -3,7 +3,7 @@
 **Goal**: Add a calm, focus‑oriented logo that matches the current warm, soothing theme and scales cleanly from favicon to app icon.
 
 ## Summary
-We will implement a rounded‑square “container” with a soft focus target inside (two rings + center dot). The outer container echoes “timebox,” the inner target communicates “focus.” The mark is simple, monochrome‑capable, and legible at small sizes. Deliverables: SVG source and PNG exports for light/dark and apple icons to match the existing icon references in `app/layout.tsx`.
+We will implement a rounded‑square “container” with a soft focus target inside (two rings + center dot). The outer container echoes “tymebox,” the inner target communicates “focus.” The mark is simple, monochrome‑capable, and legible at small sizes. Deliverables: SVG source and PNG exports for light/dark and apple icons to match the existing icon references in `app/layout.tsx`.
 
 ## Visual Specs
 - **Shape**: Rounded square container, inner target with two rings + center dot.

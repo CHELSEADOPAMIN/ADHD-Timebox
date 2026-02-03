@@ -37,7 +37,7 @@ Please authorize Google Calendar access:
 Current scopes: 
 Please authorize Google Calendar access:
   co auth google
-[00:18:13] 准备写入文件，目标路径: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json，任务数: 4
+[00:18:13] 准备写入文件，目标路径: /Users/zifeizhou/code/ADHD-Tymebox/backend/adhd_brain/daily_tasks_2026-01-31.json，任务数: 4
 <<<<<<< HEAD
 [10:19:33] create_daily_plan (Smart Merge) 被调用！参数类型: <class 'str'>
 [10:19:33] 原始数据摘要: [{"title":"专注时段","start":"2026-01-31 10:30","end":"2026-01-31 11:30","type":"work","status":"pending...
@@ -57,7 +57,7 @@ Please authorize Google Calendar access:
 Current scopes: 
 Please authorize Google Calendar access:
   co auth google
-[10:19:33] 准备写入文件，目标路径: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/daily_tasks_2026-01-31.json，任务数: 8
+[10:19:33] 准备写入文件，目标路径: /Users/zifeizhou/code/ADHD-Tymebox/backend/adhd_brain/daily_tasks_2026-01-31.json，任务数: 8
 [22:54:07] >>> plan_tools_v2 module loaded <<<
 [22:54:08] >>> plan_tools_v2 module loaded <<<
 [23:01:42] >>> plan_tools_v2 module loaded <<<
@@ -94,4 +94,5 @@ Please authorize Google Calendar access:
 Current scopes: 
 Please authorize Google Calendar access:
   co auth google
-[23:23:23] Writing file: /Users/zifeizhou/code/ADHD-Timebox/backend/adhd_brain/users/user_391WwXHS4ew1jRzMSeCNPWpwoYz/daily_tasks_2026-02-02.json, tasks: 1
+[23:23:23] Writing file: /Users/zifeizhou/code/ADHD-Tymebox/backend/adhd_brain/users/user_391WwXHS4ew1jRzMSeCNPWpwoYz/daily_tasks_2026-02-02.json, tasks: 1
+[21:36:10] >>> plan_tools_v2 module loaded <<<

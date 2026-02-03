@@ -1,7 +1,7 @@
 import { Play } from "lucide-react";
 import { FocusState, FOCUS_STATES } from "../types";
 import { MICROCOPY } from "../constants";
-import { TimeBoxSelector } from "./TimeBoxSelector";
+import { TymeboxSelector } from "./TymeboxSelector";
 import { CompletionCard } from "./CompletionCard";
 
 interface CurrentFocusCardProps {
@@ -86,7 +86,7 @@ export const CurrentFocusCard = ({
               )}
             </h2>
 
-            <TimeBoxSelector
+            <TymeboxSelector
               selected={selectedDuration}
               onSelect={actions.setDuration}
               disabled={false}

@@ -1,4 +1,4 @@
-# ADHD Timebox FastAPI 后端设计方案
+# ADHD Tymebox FastAPI 后端设计方案
 
 > 版本：v1.0
 > 日期：2026-01-26

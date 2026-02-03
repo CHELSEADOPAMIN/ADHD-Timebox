@@ -1,10 +1,10 @@
 
 
-# ADHD Timebox Agent
+# ADHD Tymebox Agent
 
 As a developer who also has ADHD, I know the pain points of this brain type: it's not that we don't *want* to do things, but we struggle with prioritizing, getting started, and getting lost when switching tasks.
 
-To solve this, I built the **ADHD Timebox Agent** based on the **ConnectOnion framework**. This isn't just a normal To-Do List; it is a full-process execution coach based on the "Timeboxing" methodology. It doesn't just record tasks—it acts as an AI agent that takes over my "prefrontal cortex" functions: planning, supervising execution, and providing dopamine feedback.
+To solve this, I built the **ADHD Tymebox Agent** based on the **ConnectOnion framework**. This isn't just a normal To-Do List; it is a full-process execution coach based on the "Tymeboxing" methodology. It doesn't just record tasks—it acts as an AI agent that takes over my "prefrontal cortex" functions: planning, supervising execution, and providing dopamine feedback.
 
 ## 🚀 Quick Start
 
@@ -15,7 +15,7 @@ Ensure your system has Python 3.10 or higher installed.
 ```bash
 # Clone the repository
 git clone <repository_url>
-cd ADHD-Timebox
+cd ADHD-Tymebox
 
 # Create a virtual environment
 python3 -m venv venv
@@ -110,20 +110,20 @@ A: Open `backend/main_mas.py` (or the specific agent file), find `model="co/gemi
 
 ---
 
-# ADHD-Timebox: Project Details
+# ADHD-Tymebox: Project Details
 
 ### I. Introduction
 
-**ADHD Timebox Agent** is an AI assistant designed to help people with ADHD effectively use the **Timeboxing** method. It addresses common ADHD problems like "difficulty prioritizing," "trouble starting," "time blindness," and "interrupted execution." It lowers cognitive load to help users enter and stay in a "Flow State."
+**ADHD Tymebox Agent** is an AI assistant designed to help people with ADHD effectively use the **Tymeboxing** method. It addresses common ADHD problems like "difficulty prioritizing," "trouble starting," "time blindness," and "interrupted execution." It lowers cognitive load to help users enter and stay in a "Flow State."
 
-### II. What is Timeboxing?
+### II. What is Tymeboxing?
 
 ##### 1. Core Definition
 
-**Timeboxing** is a method where you lock a single task into a **specific time slot**.
+**Tymeboxing** is a method where you lock a single task into a **specific time slot**.
 It’s not just a list; it **binds a task to a specific time**. Crucially, you **must produce a result within that time**. It’s like locking a task in a box: you define the start and end time, and **you only do that one thing inside the box**.
 
-*(Elon Musk reportedly uses timeboxing to achieve 8x the workload of an average person).*
+*(Elon Musk reportedly uses tymeboxing to achieve 8x the workload of an average person).*
 
 ##### 2. How to Execute?
 
@@ -165,7 +165,7 @@ It’s not just a list; it **binds a task to a specific time**. Crucially, you *
 
 ### III. Design Philosophy & Core Decisions
 
-Every design decision in the **ADHD Timebox Agent** is based on the science of Timeboxing. For an ADHD brain, simply "making a list" often fails. The system uses a **Multi-Agent Collaboration Architecture**:
+Every design decision in the **ADHD Tymebox Agent** is based on the science of Tymeboxing. For an ADHD brain, simply "making a list" often fails. The system uses a **Multi-Agent Collaboration Architecture**:
 
 #### 1. Orchestrator Agent (The Boss)
 
@@ -178,7 +178,7 @@ Every design decision in the **ADHD Timebox Agent** is based on the science of T
 
 **Role:** Your external "Prefrontal Cortex."
 
-* **List to Timebox:** You just dump your messy thoughts ("Write code, learn English, buy groceries"). The Agent organizes them into 15/30/60 minute boxes.
+* **List to Tymebox:** You just dump your messy thoughts ("Write code, learn English, buy groceries"). The Agent organizes them into 15/30/60 minute boxes.
 * **Task Shaping:**
 * Turns nouns into Verbs.
 * Breaks big tasks down and merges small tasks.
@@ -235,7 +235,7 @@ Every design decision in the **ADHD Timebox Agent** is based on the science of T
 
 ### V. Summary
 
-The **ADHD Timebox Agent** uses the power of ConnectOnion's Memory and Multi-Agent orchestration to turn a mechanical schedule into a smart, empathetic partner. It has memory, intuition, and helps my brain function better.
+The **ADHD Tymebox Agent** uses the power of ConnectOnion's Memory and Multi-Agent orchestration to turn a mechanical schedule into a smart, empathetic partner. It has memory, intuition, and helps my brain function better.
 
 
 
@@ -244,10 +244,10 @@ The **ADHD Timebox Agent** uses the power of ConnectOnion's Memory and Multi-Age
 ---
 
 
-# ADHD Timebox Agent
+# ADHD Tymebox Agent
 
 作为一个开发者，同时也是 ADHD 人群的一员，我深知这种大脑的痛点：并非不想做，而是优先级混乱、启动困难以及极易在任务切换中迷失。
-为了解决这个问题，我基于 ConnectOnion 框架开发了 ADHD Timebox Agent。这不是一个普通的 To-do List，而是一个基于“时间盒”方法论的全流程执行教练。它不仅仅是记录任务，更是通过 AI 代理接管了我的“前额叶皮层”功能——负责规划、监督执行，并提供多巴胺反馈。
+为了解决这个问题，我基于 ConnectOnion 框架开发了 ADHD Tymebox Agent。这不是一个普通的 To-do List，而是一个基于“时间盒”方法论的全流程执行教练。它不仅仅是记录任务，更是通过 AI 代理接管了我的“前额叶皮层”功能——负责规划、监督执行，并提供多巴胺反馈。
 
 ## 🚀 快速开始
 
@@ -258,7 +258,7 @@ The **ADHD Timebox Agent** uses the power of ConnectOnion's Memory and Multi-Age
 ```bash
 # 克隆仓库 (如果你是从 GitHub 下载)
 git clone <repository_url>
-cd ADHD-Timebox
+cd ADHD-Tymebox
 
 # 创建虚拟环境
 python3 -m venv venv
@@ -330,13 +330,13 @@ A: 打开 `backend/main.py` (单体) 或 `backend/agents/orchestrator.py` (MAS)�
 
 ---
 
-# ADHD-Timebox
+# ADHD-Tymebox
 
 ### 一. 项目简介
 
-**ADHD Timebox Agent 是一个帮助 ADHD人群 有效的使用时间盒设计的AI辅助系统。它不仅仅是一个待办清单，更是一个基于“时间盒”** 方法论的全流程执行教练。
+**ADHD Tymebox Agent 是一个帮助 ADHD人群 有效的使用时间盒设计的AI辅助系统。它不仅仅是一个待办清单，更是一个基于“时间盒”** 方法论的全流程执行教练。
 
-**ADHD Timebox Agent** 通过Plan、Focus、Rewards 多个agent 配合多个tools ，解决 ADHD 人群常见的“优先级难划分”、“启动困难”、“时间盲区”和“执行中断”问题，通过降低认知负荷，帮助用户进入并保持心流状态。
+**ADHD Tymebox Agent** 通过Plan、Focus、Rewards 多个agent 配合多个tools ，解决 ADHD 人群常见的“优先级难划分”、“启动困难”、“时间盲区”和“执行中断”问题，通过降低认知负荷，帮助用户进入并保持心流状态。
 
 
 ### 二.时间盒
@@ -425,11 +425,11 @@ A: 打开 `backend/main.py` (单体) 或 `backend/agents/orchestrator.py` (MAS)�
 ---
 ### 三 设计理念与核心决策  
   
-**ADHD Timebox Agent**的所有核心设计决策，都是建立在 **时间盒（Timeboxing）管理法的科学原理**上。
+**ADHD Tymebox Agent**的所有核心设计决策，都是建立在 **时间盒（Tymeboxing）管理法的科学原理**上。
 
 对于 ADHD 大脑，单纯要求“罗列任务”往往是无效的。因为 ADHD 的核心挑战正是**难以确立任务的优先级**，面对需要组织与整理的庞杂事务更是一场认知的灾难。
 
-**ADHD Timebox Agent**采用了 **Multi-Agent 协作架构**，由一个中心调度Agent 和三个功能性 Agent 组成。系统通过状态锁机制 管理上下文，确保复杂的多轮对话任务能够完整执行。
+**ADHD Tymebox Agent**采用了 **Multi-Agent 协作架构**，由一个中心调度Agent 和三个功能性 Agent 组成。系统通过状态锁机制 管理上下文，确保复杂的多轮对话任务能够完整执行。
 #### 1. Orchestrator Agent 
 
 **角色：** 系统的大脑与路由中心。
@@ -443,7 +443,7 @@ A: 打开 `backend/main.py` (单体) 或 `backend/agents/orchestrator.py` (MAS)�
 
 **角色：** 外置的“前额叶皮层”，负责任务的整理、整形与时间管理。
 
-- **清单转时间盒 (List to Timebox)：** 用户只需倾倒碎片化的想法，比如：“今天要写agent代码 学英语 买菜 回邮件 ”，无需提前整理、排序或决策。Plan Agent 会自动分析认知负荷，将其整理并塞入 **15/30/60 分钟** 的时间盒中，将“混乱”转化为可执行的秩序。
+- **清单转时间盒 (List to Tymebox)：** 用户只需倾倒碎片化的想法，比如：“今天要写agent代码 学英语 买菜 回邮件 ”，无需提前整理、排序或决策。Plan Agent 会自动分析认知负荷，将其整理并塞入 **15/30/60 分钟** 的时间盒中，将“混乱”转化为可执行的秩序。
 
 - **任务整形 (Task Shaping)：**
     
@@ -560,7 +560,7 @@ Plan Agent 缺乏“状态持久化感知”。尽管代码已经将用户的计
 
 #### 5. 引入 Memory 让agent 拥有长期记忆
 
-在引入 ConnectOnion 的 `Memory` 模块之前， **ADHD Timebox Agent** 通过 daily_tasks.json 和 上下文注 实现了状态持久化。它精确地记得“现在是 14:00，你在做任务 B，进度 50%”。哪怕重启，它读取 JSON 也能立刻恢复状态。
+在引入 ConnectOnion 的 `Memory` 模块之前， **ADHD Tymebox Agent** 通过 daily_tasks.json 和 上下文注 实现了状态持久化。它精确地记得“现在是 14:00，你在做任务 B，进度 50%”。哪怕重启，它读取 JSON 也能立刻恢复状态。
 也能知道现在的任务是什么。但它的局限在于：它只能记住“设计好”的字段，比如 : start_time、end_time、status、title。但如果用户说了一句：“我发现我下午 2 点特别容易困，以后这个时间别排重活”。旧系统会因找不到 user_energy_pattern 这种字段，只能把这句话当做闲聊处理，或者存进 thought_parking 仅仅是个备忘录 别的agent 不会读 ，而在下次 Plan agent 排期时，依然会在下午 2 点排重活。
 
 加入 Memory 后，拥有了“非结构化认知” 像一个贴身管家。它不仅看表格，还会拿个小本本记下用户的“脾气”和“习惯”。
@@ -575,5 +575,5 @@ Plan Agent 缺乏“状态持久化感知”。尽管代码已经将用户的计
 
 ### 五、总结与致谢
 
-ADHD Timebox Agent 利用 ConnectOnion 强大的 Memory 能力和灵活的 Multi-Agent 编排，成功将一个“只会看日程表的机械程序”，升级成了一个“有记忆、懂默契、能进化”的聪明Agent。
+ADHD Tymebox Agent 利用 ConnectOnion 强大的 Memory 能力和灵活的 Multi-Agent 编排，成功将一个“只会看日程表的机械程序”，升级成了一个“有记忆、懂默契、能进化”的聪明Agent。
 感谢 ConnectOnion，让复杂的事情变得简单，让 AI 成为了我大脑的延伸。

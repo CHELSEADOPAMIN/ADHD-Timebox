@@ -7,8 +7,9 @@ import { api } from "@/app/utils/api";
 import { toStoreTask } from "@/app/utils/taskAdapter";
 import { useAppStore, type ChatMessage } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { Clock, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
+import { LogoMark } from "./logo-mark";
 
 const createMessage = (
   role: ChatMessage["role"],
@@ -106,7 +107,7 @@ export function PlanningMode() {
         {planningMessages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <Clock className="h-8 w-8 text-primary" />
+              <LogoMark size={28} />
             </div>
             <h2 className="mb-2 text-xl font-medium text-foreground">
               What would you like to work on?

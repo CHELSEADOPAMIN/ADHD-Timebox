@@ -1,7 +1,7 @@
 export { HeaderBar } from "./HeaderBar";
 export { FullScreenFocus } from "./FullScreenFocus";
 export { PausedBanner } from "./PausedBanner";
-export { TimeBoxSelector } from "./TimeBoxSelector";
+export { TymeboxSelector } from "./TymeboxSelector";
 export { CompletionCard } from "./CompletionCard";
 export { CurrentFocusCard } from "./CurrentFocusCard";
 export { QuickAddTask } from "./QuickAddTask";

@@ -32,7 +32,7 @@ export const HeaderBar = ({
             isDark ? "text-slate-100" : "text-slate-800"
           }`}
         >
-          TimeBox
+          Tymebox
         </h1>
         <p
           className={`text-xs font-bold tracking-wider uppercase ${

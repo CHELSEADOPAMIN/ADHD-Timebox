@@ -2,8 +2,8 @@
 # ADHD Guardian Agent (The Guardian)
 #
 # Purpose:
-# - Read structured plans produced by the Timebox planner (daily_tasks_*.json)
-# - Provide micro-step starts at the beginning of each timebox via TodoList
+# - Read structured plans produced by the Tymebox planner (daily_tasks_*.json)
+# - Provide micro-step starts at the beginning of each tymebox via TodoList
 # - Handle thought parking during execution (background WebFetch + memory)
 # - Monitor distraction (simple heartbeat), and release rewards + parking info at the end
 #
@@ -359,7 +359,7 @@ def maybe_handle_completion(plan_data: Optional[dict] = None) -> None:
 
 def read_structured_plan(date: Optional[str] = None) -> str:
     """
-    Read the structured plan saved by the Timebox planner.
+    Read the structured plan saved by the Tymebox planner.
     Args:
         date: optional, YYYY-MM-DD; default is today.
     Returns:
@@ -478,7 +478,7 @@ def announce_plan_on_startup() -> None:
         title = focus_task.get("title") or "task"
         print(f"📝 Plan has no times. Start with: {title}")
     else:
-        print("⚠️ Plan is empty. Please create today's timebox first.")
+        print("⚠️ Plan is empty. Please create today's tymebox first.")
 
     maybe_handle_completion(plan_data)
 
@@ -537,7 +537,7 @@ activity_monitor = ActivityMonitor(idle_minutes=8)
 guardian_system_prompt = """
 You are the ADHD Guardian Agent - a backstage execution coach.
 Respond in English only, even if the user writes in another language.
-Your goal: during timebox execution, use visible progress + gentle nudges to help the user finish tasks.
+Your goal: during tymebox execution, use visible progress + gentle nudges to help the user finish tasks.
 
 ## No hallucinations / boundaries
 - Only speak based on the plan returned by `read_structured_plan()`; never invent new tasks or future plans.
@@ -546,14 +546,14 @@ Your goal: during timebox execution, use visible progress + gentle nudges to hel
 - If the user asks for a new/tomorrow plan, reply: "I'm the execution guardian. Use the Planner to schedule."
 
 ## State machine (keep state file in sync)
-- Idle: waiting for the next timebox.
+- Idle: waiting for the next tymebox.
 - Starting: time reached but user hasn't started; launch micro-steps via TodoList.
 - Running: focus in progress; use thought parking and distraction monitoring.
 - Closing: wrap up, celebrate, and release parking lot contents.
 Use `set_guardian_state` / `get_guardian_state` explicitly.
 
 ## Inputs / data sources
-- `read_structured_plan()`: read Agent A's JSON plan. Prefer timebox names and start/end times.
+- `read_structured_plan()`: read Agent A's JSON plan. Prefer tymebox names and start/end times.
 - `get_current_datetime()`: report time and sense date.
 
 ## Core flow

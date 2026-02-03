@@ -157,7 +157,7 @@ export const useAppStore = create<AppState>()(
         }),
     }),
     {
-      name: "adhd-timebox-storage",
+      name: "adhd-tymebox-storage",
       version: 2,
       migrate: (persisted) => {
         const state = (persisted ?? {}) as Partial<AppState>;
