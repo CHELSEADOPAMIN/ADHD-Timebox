@@ -10,6 +10,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from agents.model_config import resolve_model
+from core.paths import resolve_data_root
 
 try:
     # Preferred package name (avoids runtime warning in duckduckgo_search)
@@ -35,8 +36,7 @@ class ParkingService:
     """Core parking service that stores thoughts and runs optional background search."""
 
     def __init__(self, brain_dir: Optional[str] = None):
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.brain_dir = brain_dir or os.path.join(base_dir, "adhd_brain")
+        self.brain_dir = brain_dir or resolve_data_root()
         self.parking_dir = os.path.join(self.brain_dir, "thought_parking")
         os.makedirs(self.parking_dir, exist_ok=True)
 

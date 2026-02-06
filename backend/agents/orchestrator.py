@@ -91,12 +91,13 @@ class OrchestratorAgent:  # Note: uses composition instead of inheriting Agent
         brain_dir: Optional[str] = None,
         memory: Optional[Memory] = None,
     ):
-        # Shared memory for Planner / Focus / Reward agents.
-        self.shared_memory = memory or Memory(
-            memory_dir=memory_dir or "adhd_brain/long_term_memory"
-        )
         # Warm PlannerAgent; keep PlanManager at router level for context injection.
         self.plan_manager = plan_manager or PlanManager()
+        # Shared memory for Planner / Focus / Reward agents.
+        resolved_memory_dir = memory_dir or os.path.join(
+            self.plan_manager.plan_dir, "long_term_memory"
+        )
+        self.shared_memory = memory or Memory(memory_dir=resolved_memory_dir)
         self.planner_agent = PlannerAgent(
             plan_manager=self.plan_manager, memory=self.shared_memory
         )

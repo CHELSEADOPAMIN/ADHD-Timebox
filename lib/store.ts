@@ -10,9 +10,16 @@ export interface Task {
   description?: string;
   duration: number; // in minutes
   createdAt: Date;
+  start?: string | null;
+  end?: string | null;
+  startAt?: string | null;
+  endAt?: string | null;
+  type?: string;
   startedAt?: Date;
   completedAt?: Date;
   status: "pending" | "pooled" | "in-progress" | "completed" | "partial" | "stuck";
+  googleEventId?: string | null;
+  syncStatus?: "success" | "failed" | "pending" | null;
 }
 
 export interface ThoughtEntry {
@@ -78,6 +85,14 @@ interface AppState {
   // UI state
   showThoughtParking: boolean;
   setShowThoughtParking: (show: boolean) => void;
+  calendarModalOpen: boolean;
+  setCalendarModalOpen: (open: boolean) => void;
+  calendarView: "day" | "week";
+  setCalendarView: (view: "day" | "week") => void;
+  googleCalendarConnected: boolean;
+  setGoogleCalendarConnected: (connected: boolean) => void;
+  lastSyncTime: string | null;
+  setLastSyncTime: (value: string | null) => void;
 
   // Reset for new session
   resetSession: () => void;
@@ -146,6 +161,15 @@ export const useAppStore = create<AppState>()(
       // UI
       showThoughtParking: false,
       setShowThoughtParking: (showThoughtParking) => set({ showThoughtParking }),
+      calendarModalOpen: false,
+      setCalendarModalOpen: (calendarModalOpen) => set({ calendarModalOpen }),
+      calendarView: "day",
+      setCalendarView: (calendarView) => set({ calendarView }),
+      googleCalendarConnected: false,
+      setGoogleCalendarConnected: (googleCalendarConnected) =>
+        set({ googleCalendarConnected }),
+      lastSyncTime: null,
+      setLastSyncTime: (lastSyncTime) => set({ lastSyncTime }),
 
       // Reset
       resetSession: () =>
@@ -162,11 +186,10 @@ export const useAppStore = create<AppState>()(
       migrate: (persisted) => {
         const state = (persisted ?? {}) as Partial<AppState>;
         return {
-          ...state,
-          // Always drop chat history on load.
-          planningMessages: [],
-          parkingMessages: [],
-        } as Partial<AppState>;
+          hasCompletedOnboarding: state.hasCompletedOnboarding ?? false,
+          tasks: Array.isArray(state.tasks) ? state.tasks : [],
+          thoughts: Array.isArray(state.thoughts) ? state.thoughts : [],
+        };
       },
       partialize: (state) => ({
         hasCompletedOnboarding: state.hasCompletedOnboarding,

@@ -2,28 +2,32 @@
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import os
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
-from api.routes import auth, chat, events, focus, health, parking, tasks
+from api.routes import auth, calendar, chat, events, focus, health, parking, tasks
 from core.events import build_idle_handler
-from core.plan_manager import PlanManagerWithLock
 from core.state import app_state
 from tools.idle_watcher import IdleWatcher
 from agents.orchestrator import OrchestratorAgent
 
 
-def create_app() -> FastAPI:
+def create_app(data_dir: str | None = None) -> FastAPI:
+    if data_dir:
+        os.environ["ADHD_DATA_DIR"] = data_dir
+
     app = FastAPI(title="ADHD Tymebox API")
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000"],
-        allow_credentials=True,
+        allow_origins=["*"],
+        allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -35,6 +39,7 @@ def create_app() -> FastAPI:
     app.include_router(focus.router)
     app.include_router(auth.router)
     app.include_router(parking.router)
+    app.include_router(calendar.router)
 
     @app.on_event("startup")
     async def startup() -> None:
@@ -53,10 +58,9 @@ def create_app() -> FastAPI:
             )
 
         app_state.event_loop = asyncio.get_running_loop()
-        app_state.event_queue = asyncio.Queue()
+        app_state.event_queue = app_state.get_event_queue("default-user")
 
-        plan_manager = PlanManagerWithLock()
-        orchestrator = OrchestratorAgent(plan_manager=plan_manager)
+        orchestrator = app_state.get_orchestrator("default-user")
         app_state.orchestrator = orchestrator
 
         idle_watcher = IdleWatcher(
@@ -82,3 +86,16 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="ADHD Timebox API server")
+    parser.add_argument("--data-dir", dest="data_dir", default=None)
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=8000)
+    args = parser.parse_args()
+
+    if args.data_dir:
+        os.environ["ADHD_DATA_DIR"] = args.data_dir
+
+    uvicorn.run(create_app(args.data_dir), host=args.host, port=args.port)

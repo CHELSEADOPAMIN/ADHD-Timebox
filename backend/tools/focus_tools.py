@@ -5,6 +5,7 @@ import re
 import subprocess
 from typing import Any, Dict, List, Optional, Tuple
 
+from core.paths import resolve_data_root
 from tools.plan_tools_v2 import PlanManager
 from tools.reward_tools import RewardToolkit
 
@@ -37,9 +38,7 @@ class ContextTool:
     """
 
     def __init__(self, plan_dir: Optional[str] = None):
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        default_plan_dir = os.path.join(base_dir, "adhd_brain")
-        self.plan_dir = plan_dir or default_plan_dir
+        self.plan_dir = plan_dir or resolve_data_root()
         os.makedirs(self.plan_dir, exist_ok=True)
 
     # -- Public tool methods --

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { api } from "@/app/utils/api";
 import { toStoreTask } from "@/app/utils/taskAdapter";
 import { useAppStore } from "@/lib/store";
@@ -12,59 +12,34 @@ import { RestingMode } from "./resting-mode";
 import { ThoughtParkingSheet } from "./thought-parking-sheet";
 import { OnboardingDialog } from "./onboarding-dialog";
 import { Sidebar } from "./sidebar";
-import { UserButton, useUser } from "@clerk/nextjs";
 import { LogoLockup } from "./logo-lockup";
+import { CalendarModal } from "./calendar-modal";
 
 export function AppShell() {
-  const { userId } = useUser();
-  const lastUserIdRef = useRef<string | null>(null);
   const {
     userState,
     hasCompletedOnboarding,
     hasHydrated,
+    setHasHydrated,
     setTasks,
-    clearPlanningMessages,
-    clearParkingMessages,
-    setCurrentTask,
-    setTimeRemaining,
-    setIsTimerRunning,
-    setUserState,
   } = useAppStore();
 
   useEffect(() => {
-    if (!hasHydrated) return;
-    const lastUserId = lastUserIdRef.current;
-    if (lastUserId && lastUserId !== userId) {
-      localStorage.removeItem("adhd-tymebox-storage");
-      setTasks([]);
-      setCurrentTask(null);
-      clearPlanningMessages();
-      clearParkingMessages();
-      setTimeRemaining(0);
-      setIsTimerRunning(false);
-      setUserState("planning");
-    }
-    lastUserIdRef.current = userId ?? null;
-  }, [
-    hasHydrated,
-    userId,
-    setTasks,
-    clearPlanningMessages,
-    clearParkingMessages,
-    setCurrentTask,
-    setTimeRemaining,
-    setIsTimerRunning,
-    setUserState,
-  ]);
+    if (hasHydrated) return;
+    const timer = setTimeout(() => {
+      setHasHydrated(true);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [hasHydrated, setHasHydrated]);
 
   useEffect(() => {
-    if (!hasHydrated || !userId) return;
+    if (!hasHydrated) return;
 
     let isMounted = true;
 
     const loadTasks = async () => {
       try {
-        const backendTasks = await api.getTasks(userId ?? undefined);
+        const backendTasks = await api.getTasks();
         if (!isMounted) return;
         setTasks(backendTasks.map(toStoreTask));
       } catch (error) {
@@ -84,6 +59,7 @@ export function AppShell() {
   }
 
   const renderCurrentMode = () => {
+    console.log("AppShell rendering mode. userState:", userState);
     switch (userState) {
       case "planning":
         return <PlanningMode />;
@@ -108,7 +84,6 @@ export function AppShell() {
           </div>
           <div className="flex items-center gap-3">
             <StateIndicator />
-            <UserButton afterSignOutUrl="/" />
           </div>
         </div>
       </header>
@@ -128,6 +103,9 @@ export function AppShell() {
 
       {/* Onboarding */}
       {!hasCompletedOnboarding && <OnboardingDialog />}
+
+      {/* Calendar modal */}
+      <CalendarModal />
     </div>
   );
 }

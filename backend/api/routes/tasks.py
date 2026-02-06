@@ -37,9 +37,12 @@ def _normalize_task(task: dict) -> dict:
         "title": task.get("title"),
         "start": _format_time(task.get("start")),
         "end": _format_time(task.get("end")),
+        "start_at": task.get("start"),
+        "end_at": task.get("end"),
         "type": task.get("type", "work"),
         "status": task.get("status", "pending"),
         "google_event_id": task.get("google_event_id"),
+        "sync_status": task.get("sync_status"),
     }
 
 
@@ -62,6 +65,12 @@ async def list_tasks(
 
     tasks, path, err = plan_manager._load_tasks(plan_date.isoformat(), False)
     if err:
+        if "Plan file not found" in str(err):
+            return {
+                "date": plan_date.isoformat(),
+                "tasks": [],
+                "summary": {"total": 0, "done": 0, "pending": 0},
+            }
         return error_response(404, "PLAN_NOT_FOUND", "Plan file not found", err)
 
     tasks = tasks or []

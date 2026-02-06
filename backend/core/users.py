@@ -6,6 +6,8 @@ import os
 import re
 from typing import Optional, Tuple
 
+from core.paths import resolve_data_root
+
 
 _SAFE_RE = re.compile(r"[^a-zA-Z0-9_-]")
 
@@ -22,7 +24,7 @@ def normalize_user_id(raw: Optional[str]) -> Optional[str]:
 
 def user_storage_dirs(user_id: str) -> Tuple[str, str]:
     """Return (brain_dir, memory_dir) for a user."""
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    brain_dir = os.path.join(base_dir, "adhd_brain", "users", user_id)
+    data_root = resolve_data_root()
+    brain_dir = os.path.join(data_root, "users", user_id)
     memory_dir = os.path.join(brain_dir, "long_term_memory")
     return brain_dir, memory_dir

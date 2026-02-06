@@ -4,6 +4,8 @@
 import datetime
 import json
 import os
+
+from core.paths import resolve_data_root
 import random
 import subprocess
 import textwrap
@@ -26,7 +28,7 @@ except Exception:  # pragma: no cover - optional dependency
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ADHD_DIR = os.path.join(BASE_DIR, "adhd_brain")
+ADHD_DIR = resolve_data_root()
 os.makedirs(ADHD_DIR, exist_ok=True)
 
 PARKING_DIR = os.path.join(ADHD_DIR, "thought_parking")

@@ -8,7 +8,6 @@ import { toStoreTask } from "@/app/utils/taskAdapter";
 import { useAppStore, type ChatMessage } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Send } from "lucide-react";
-import { useAuth } from "@clerk/nextjs";
 import { LogoMark } from "./logo-mark";
 
 const createMessage = (
@@ -23,17 +22,19 @@ const createMessage = (
 });
 
 export function PlanningMode() {
-  const { userId, isLoaded, isSignedIn } = useAuth();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const authReady = isLoaded && isSignedIn;
 
   const {
     planningMessages,
     addPlanningMessage,
     setTasks,
     clearPlanningMessages,
+    setUserState,
+    setCurrentTask,
+    setIsTimerRunning,
+    setTimeRemaining,
   } = useAppStore();
 
   // ✅ IME 处理：避免 Enter 结束组词时直接触发发送
@@ -58,19 +59,13 @@ export function PlanningMode() {
 
     const messageText = input.trim();
     if (!messageText || isLoading) return;
-    if (!authReady) {
-      addPlanningMessage(
-        createMessage("assistant", "Please sign in to continue.")
-      );
-      return;
-    }
 
     setInput("");
     addPlanningMessage(createMessage("user", messageText));
     setIsLoading(true);
 
     try {
-      const response = await api.chat(messageText, userId ?? undefined);
+      const response = await api.chat(messageText);
       const assistantText = response.ascii_art
         ? [response.content, response.ascii_art].filter(Boolean).join("\n\n")
         : response.content;
@@ -81,7 +76,7 @@ export function PlanningMode() {
 
       if (response.tasks_updated) {
         try {
-          const backendTasks = await api.getTasks(userId ?? undefined);
+          const backendTasks = await api.getTasks();
           setTasks(backendTasks.map(toStoreTask));
         } catch (error) {
           console.error("Failed to refresh tasks", error);
@@ -174,7 +169,7 @@ export function PlanningMode() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="What's on your mind?"
             className="min-h-[52px] max-h-32 resize-none"
-            disabled={isLoading || !authReady}
+            disabled={isLoading}
             onCompositionStart={() => {
               setIsComposing(true);
             }}
@@ -207,11 +202,24 @@ export function PlanningMode() {
             <Button
               type="submit"
               size="icon"
-              disabled={!input.trim() || isLoading || !authReady}
+              disabled={!input.trim() || isLoading}
               className="h-[52px] w-[52px]"
             >
               <Send className="h-5 w-5" />
               <span className="sr-only">Send message</span>
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              className="h-[52px]"
+              onClick={() => {
+                  setCurrentTask({ id: "debug-1", title: "Debug Task", status: "in-progress", duration: 25, createdAt: new Date(), startedAt: new Date() });
+                  setTimeRemaining(25 * 60);
+                  setIsTimerRunning(true);
+                  setUserState("focusing");
+              }}
+            >
+              Debug Focus
             </Button>
           </div>
         </form>

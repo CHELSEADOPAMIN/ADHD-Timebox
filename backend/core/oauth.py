@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime
 import json
 import os
 import urllib.error
@@ -117,3 +118,22 @@ def apply_google_oauth(orchestrator: OrchestratorAgent, env_path: str) -> Dict[s
     load_dotenv(env_path, override=True)
     refresh_calendar(orchestrator)
     return credentials
+
+
+def is_connected() -> bool:
+    access = os.getenv("GOOGLE_ACCESS_TOKEN")
+    refresh = os.getenv("GOOGLE_REFRESH_TOKEN")
+    scopes = os.getenv("GOOGLE_SCOPES", "")
+    if not access or not refresh:
+        return False
+    return "calendar" in scopes
+
+
+def get_token_expiry() -> Optional[datetime.datetime]:
+    expires_at = os.getenv("GOOGLE_TOKEN_EXPIRES_AT")
+    if not expires_at:
+        return None
+    try:
+        return datetime.datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
+    except Exception:
+        return None

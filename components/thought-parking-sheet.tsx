@@ -56,7 +56,7 @@ function PendingIndicator() {
 }
 
 export function ThoughtParkingSheet() {
-  const { userId, isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -102,11 +102,7 @@ export function ThoughtParkingSheet() {
     setIsLoading(true);
 
     try {
-      const response = await api.parkThought(
-        messageText,
-        undefined,
-        userId ?? undefined
-      );
+      const response = await api.parkThought(messageText);
       addParkingMessage(
         createMessage("assistant", response.content || "Thought saved.")
       );

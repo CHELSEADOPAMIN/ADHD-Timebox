@@ -25,11 +25,12 @@ except Exception:
     cowsay = None
 
 from agents.model_config import resolve_model
+from core.paths import resolve_data_root
 
 # --- Constants & paths ---
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ADHD_DIR = os.path.join(BASE_DIR, "adhd_brain")
+ADHD_DIR = resolve_data_root()
 os.makedirs(ADHD_DIR, exist_ok=True)
 
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
@@ -524,7 +525,7 @@ class ParkingTodoList(TodoList):
 
 # --- Init tools ---
 
-memory = Memory(memory_dir="adhd_brain")
+memory = Memory(memory_dir=os.path.join(ADHD_DIR, "long_term_memory"))
 calendar = GoogleCalendar()
 todo_main = TodoList()             # main tasks / micro-steps
 todo_parking = ParkingTodoList()   # parking lot Todos

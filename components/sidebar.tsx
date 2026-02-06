@@ -17,6 +17,68 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// Mock data for tasks
+const mockTasks: Task[] = [
+  {
+    id: "1",
+    title: "Review design feedback",
+    duration: 15,
+    status: "in-progress",
+    createdAt: new Date(),
+    startedAt: new Date(),
+  },
+  {
+    id: "2",
+    title: "Reply to Sarah's email",
+    duration: 10,
+    status: "pending",
+    createdAt: new Date(),
+  },
+  {
+    id: "3",
+    title: "Update project notes",
+    duration: 20,
+    status: "pending",
+    createdAt: new Date(),
+  },
+  {
+    id: "4",
+    title: "Quick break + stretch",
+    duration: 5,
+    status: "pending",
+    createdAt: new Date(),
+  },
+  {
+    id: "5",
+    title: "Check Slack messages",
+    duration: 10,
+    status: "pending",
+    createdAt: new Date(),
+  },
+  {
+    id: "6",
+    title: "Review pull requests",
+    duration: 25,
+    status: "pending",
+    createdAt: new Date(),
+  },
+  {
+    id: "7",
+    title: "Write meeting notes",
+    duration: 15,
+    status: "pending",
+    createdAt: new Date(),
+  },
+  {
+    id: "8",
+    title: "Update documentation",
+    duration: 30,
+    status: "pending",
+    createdAt: new Date(),
+  },
+];
+
+
 type SectionId = "tasks" | "calendar" | "status";
 
 function formatDuration(minutes: number): string {
@@ -200,28 +262,6 @@ function TaskItem({
   );
 }
 
-function CalendarEvent({
-  event,
-  isMuted,
-}: {
-  event: { id: string; title: string; time: string; duration: number };
-  isMuted: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2 transition-colors",
-        isMuted && "opacity-50"
-      )}
-    >
-      <div className="h-1.5 w-1.5 rounded-full bg-accent shrink-0" />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm text-muted-foreground">{event.title}</p>
-        <p className="text-xs text-muted-foreground/70">{event.time}</p>
-      </div>
-    </div>
-  );
-}
 
 export function Sidebar() {
   const {
@@ -233,6 +273,7 @@ export function Sidebar() {
     setUserState,
     setTimeRemaining,
     setIsTimerRunning,
+    setCalendarModalOpen,
   } = useAppStore();
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -282,6 +323,27 @@ export function Sidebar() {
   const visibleTasks = tasks.filter(
     (t) => t.status !== "completed" || t.id === currentTask?.id
   );
+
+  const formatTime = (time?: string | null) => {
+    if (!time) return null;
+    const trimmed = time.trim();
+    const part = trimmed.includes("T")
+      ? trimmed.split("T")[1]
+      : trimmed.includes(" ")
+      ? trimmed.split(" ")[1]
+      : trimmed;
+    return part.slice(0, 5);
+  };
+
+  const calendarPreviewEvents = tasks
+    .filter((task) => task.start || task.startAt)
+    .map((task) => ({
+      id: task.id,
+      title: task.title,
+      time: formatTime(task.startAt || task.start) || "--:--",
+      duration: task.duration,
+    }))
+    .sort((a, b) => a.time.localeCompare(b.time));
 
   // Toggle section expansion (only meaningful while expanded)
   const toggleSection = (sectionId: SectionId) => {
@@ -334,7 +396,7 @@ export function Sidebar() {
   };
 
   // ✅ Collapsed state is controlled ONLY by hover
-  const isCollapsed = !isHovered;
+  const isCollapsed = false; // !isHovered;
 
   return (
     <aside
@@ -357,12 +419,14 @@ export function Sidebar() {
           >
             <ListTodo className="h-5 w-5" />
           </div>
-          <div
+          <button
+            type="button"
+            onClick={() => setCalendarModalOpen(true)}
             className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
-            title="Calendar Preview"
+            title="Open calendar"
           >
             <Calendar className="h-5 w-5" />
-          </div>
+          </button>
           <div
             className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
             title="Status"
@@ -396,11 +460,7 @@ export function Sidebar() {
                       isActive={currentTask?.id === task.id}
                       isMuted={isMuted}
                       isSelected={selectedTaskId === task.id}
-                      onSelect={() =>
-                        setSelectedTaskId(
-                          selectedTaskId === task.id ? null : task.id
-                        )
-                      }
+                      onSelect={() => handleStartTask(task)}
                       onStart={() => handleStartTask(task)}
                       onDismiss={handleDismiss}
                     />
@@ -423,13 +483,16 @@ export function Sidebar() {
               isExpanded={expandedSections.has("calendar")}
               onToggle={() => toggleSection("calendar")}
               isMuted={isMuted}
-              badge={0}
+              badge={calendarPreviewEvents.length}
             >
-              <div className="py-4 text-center">
-                <p className="text-sm text-muted-foreground/60">
-                  No calendar events synced
-                </p>
-              </div>
+              <Button
+                variant="outline"
+                onClick={() => setCalendarModalOpen(true)}
+                className="w-full justify-between"
+              >
+                <span>Open calendar view</span>
+                <Calendar className="h-4 w-4" />
+              </Button>
             </CollapsibleSection>
 
             {/* Status / Reassurance Section */}

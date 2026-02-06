@@ -2,15 +2,16 @@ import datetime
 import json
 import os
 import re
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
+from core.paths import resolve_data_root
 
 # Debug logger: write straight to file to avoid console noise.
 def debug_log(message):
     try:
-        # Get backend dir (this file lives under backend/tools)
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        log_path = os.path.join(base_dir, "FORCE_DEBUG.txt")
+        data_root = resolve_data_root()
+        os.makedirs(data_root, exist_ok=True)
+        log_path = os.path.join(data_root, "FORCE_DEBUG.txt")
 
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
         with open(log_path, "a", encoding="utf-8") as f:
@@ -30,11 +31,11 @@ class PlanManager:
     """
 
     def __init__(self, plan_dir: Optional[str] = None, calendar=None):
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        default_plan_dir = os.path.join(base_dir, "adhd_brain")
-        self.plan_dir = plan_dir or default_plan_dir
+        self.plan_dir = plan_dir or resolve_data_root()
         os.makedirs(self.plan_dir, exist_ok=True)
         self.calendar = calendar
+        self.last_sync_time: Optional[datetime.datetime] = None
+        self.last_sync_summary: Optional[Dict[str, int]] = None
 
     # -- Public methods --
 
@@ -184,8 +185,7 @@ class PlanManager:
 
         added_count = 0
         updated_count = 0
-        sync_success = 0
-        sync_errors: List[str] = []
+        sync_items: List[Tuple[Dict, str]] = []
 
         for new_t in normalized_new_tasks:
             key = new_t.get("id") or new_t.get("title")
@@ -199,6 +199,11 @@ class PlanManager:
             if old_task and "status" not in new_t:
                 merged_task["status"] = old_task.get("status", "pending")
             merged_task.setdefault("status", "pending")
+
+            # Preserve old sync status unless explicitly provided
+            if old_task and "sync_status" not in new_t:
+                merged_task["sync_status"] = old_task.get("sync_status", "pending")
+            merged_task.setdefault("sync_status", "pending")
 
             # Preserve calendar event id
             merged_task["google_event_id"] = merged_task.get("google_event_id") or (
@@ -218,15 +223,15 @@ class PlanManager:
                 needs_sync = not unchanged
 
             if needs_sync:
-                synced, event_id, sync_msg = self._sync_calendar(merged_task, action)
-                merged_task["google_event_id"] = event_id or merged_task.get(
-                    "google_event_id"
-                )
-                if synced:
-                    sync_success += 1
-                elif sync_msg:
-                    sync_errors.append(
-                        f"{merged_task.get('title')}: {sync_msg.lstrip(',')}"
+                sync_items.append((merged_task, action))
+            else:
+                if merged_task.get("google_event_id"):
+                    merged_task["sync_status"] = (
+                        merged_task.get("sync_status") or "success"
+                    )
+                else:
+                    merged_task["sync_status"] = (
+                        merged_task.get("sync_status") or "pending"
                     )
 
             task_map[key] = merged_task
@@ -237,6 +242,15 @@ class PlanManager:
 
         final_tasks = list(task_map.values())
         final_tasks.sort(key=lambda t: t.get("start", ""))
+
+        sync_success = 0
+        sync_failed = 0
+        sync_pending = 0
+        sync_errors: List[str] = []
+        if sync_items:
+            sync_success, sync_failed, sync_pending, sync_errors = (
+                self._sync_calendar_batch(sync_items)
+            )
 
         # --- 4. Write file ---
         debug_log(f"Writing file: {path}, tasks: {len(final_tasks)}")
@@ -249,8 +263,10 @@ class PlanManager:
         sync_msg = ""
         if sync_success:
             sync_msg = f" (synced {sync_success} to calendar)"
-        if sync_errors:
-            sync_msg = f"{sync_msg} (failed {len(sync_errors)} syncs; see logs)"
+        if sync_failed:
+            sync_msg = f"{sync_msg} (failed {sync_failed} syncs; see logs)"
+        elif sync_pending:
+            sync_msg = f"{sync_msg} (pending {sync_pending} syncs)"
 
         action_msg = []
         if added_count:
@@ -348,6 +364,7 @@ class PlanManager:
                 "type": "work",
                 "status": "pending",  # default status
                 "google_event_id": None,
+                "sync_status": "pending",
             }
             tasks.append(new_task)
             target_task = new_task
@@ -358,9 +375,19 @@ class PlanManager:
         action_for_calendar = (
             "create" if created or not target_task.get("google_event_id") else "update"
         )
-        _, event_id, sync_msg = self._sync_calendar(target_task, action_for_calendar)
+        synced, event_id, sync_msg = self._sync_calendar(target_task, action_for_calendar)
         if event_id:
             target_task["google_event_id"] = event_id
+        if synced:
+            target_task["sync_status"] = "success"
+            self._record_sync_summary(1, 1, 0, 0)
+        else:
+            if sync_msg:
+                target_task["sync_status"] = "failed"
+                self._record_sync_summary(1, 0, 1, 0)
+            else:
+                target_task["sync_status"] = target_task.get("sync_status") or "pending"
+                self._record_sync_summary(1, 0, 0, 1)
 
         write_err = self._write_tasks(path, tasks)
         if write_err:
@@ -409,6 +436,77 @@ class PlanManager:
                 f"{idx}. {start_text}-{end_text}{duration_mark} | {title} [{status}]"
             )
         return "\n".join(lines)
+
+    def sync_plan_date(self, target_date: Optional[str] = None) -> Dict[str, Any]:
+        """Force-sync tasks for a given date to Google Calendar."""
+        today = datetime.date.today()
+        plan_date, date_err = self._parse_plan_date(target_date, today)
+        if date_err:
+            return {
+                "error": True,
+                "status": 400,
+                "code": "INVALID_DATE",
+                "message": "Invalid date format",
+                "detail": date_err,
+            }
+
+        plan_date_str = plan_date.isoformat()
+        tasks, path, err = self._load_tasks(plan_date_str, create_if_missing=False)
+        if err:
+            return {
+                "error": True,
+                "status": 404,
+                "code": "PLAN_NOT_FOUND",
+                "message": "Plan file not found",
+                "detail": err,
+            }
+        if tasks is None:
+            return {
+                "error": True,
+                "status": 500,
+                "code": "PLAN_INVALID",
+                "message": "Invalid plan file format",
+                "detail": path,
+            }
+
+        sync_items: List[Tuple[Dict, str]] = []
+        for task in tasks:
+            if not isinstance(task, dict):
+                continue
+            action = "update" if task.get("google_event_id") else "create"
+            sync_items.append((task, action))
+
+        success = failed = pending = 0
+        errors: List[str] = []
+        if sync_items:
+            success, failed, pending, errors = self._sync_calendar_batch(sync_items)
+        else:
+            self._record_sync_summary(0, 0, 0, 0)
+
+        write_err = self._write_tasks(path, tasks)
+        if write_err:
+            return {
+                "error": True,
+                "status": 500,
+                "code": "WRITE_FAILED",
+                "message": "Write failed",
+                "detail": write_err,
+            }
+
+        return {
+            "success": True,
+            "date": plan_date_str,
+            "summary": {
+                "total": len(sync_items),
+                "success": success,
+                "failed": failed,
+                "pending": pending,
+            },
+            "errors": errors,
+            "last_sync_time": self.last_sync_time.isoformat()
+            if self.last_sync_time
+            else None,
+        }
 
     # -- Internal helpers --
 
@@ -702,6 +800,50 @@ class PlanManager:
             return match.group(1).strip()
         return None
 
+    def _record_sync_summary(
+        self, total: int, success: int, failed: int, pending: int
+    ) -> None:
+        self.last_sync_time = datetime.datetime.now().astimezone()
+        self.last_sync_summary = {
+            "total": total,
+            "success": success,
+            "failed": failed,
+            "pending": pending,
+        }
+
+    def _sync_calendar_batch(
+        self, items: List[Tuple[Dict, str]]
+    ) -> Tuple[int, int, int, List[str]]:
+        """Sync a batch of tasks; returns success/failed/pending counts and error messages."""
+        success = 0
+        failed = 0
+        pending = 0
+        errors: List[str] = []
+
+        for task, action in items:
+            synced, event_id, sync_msg = self._sync_calendar(task, action)
+            if event_id:
+                task["google_event_id"] = event_id
+
+            if synced:
+                task["sync_status"] = "success"
+                success += 1
+            else:
+                if sync_msg:
+                    task["sync_status"] = "failed"
+                    failed += 1
+                    errors.append(
+                        f"{task.get('title') or task.get('id')}: {sync_msg.lstrip(',')}"
+                    )
+                else:
+                    task["sync_status"] = task.get("sync_status") or "pending"
+                    pending += 1
+
+        if items:
+            self._record_sync_summary(len(items), success, failed, pending)
+
+        return success, failed, pending, errors
+
     def _sync_calendar(
         self, task: Dict, action: str
     ) -> Tuple[bool, Optional[str], str]:
@@ -719,8 +861,13 @@ class PlanManager:
             debug_log(f"[Calendar] Not configured or invalid type: {type(self.calendar)}")
             return False, event_id, ""
         if hasattr(self.calendar, "reason"):
-            debug_log(f"[Calendar] Fallback mode: {self.calendar.reason}")
-            return False, event_id, ""
+            try:
+                from connectonion import GoogleCalendar
+
+                self.calendar = GoogleCalendar()
+            except Exception:
+                debug_log(f"[Calendar] Fallback mode: {self.calendar.reason}")
+                return False, event_id, ""
 
         iso_start = self._format_calendar_time(start)
         iso_end = self._format_calendar_time(end)

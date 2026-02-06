@@ -14,19 +14,28 @@
 
 # production
 /build
+/dist
+/electron/dist
+/resources/backend/
 
 # misc
 .DS_Store
 *.pem
+.tmp*
+/main.js
+/index.html
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
+backend/FORCE_DEBUG.txt
 
 # local env files
 .env
 .env*.local
+backend/.env
 
 # vercel
 .vercel
@@ -47,14 +56,23 @@ __pycache__/
 # IDE
 .cursor/
 .shared/
+.idea/
+.vscode/
 
 # ConnectOnion
 .co/keys/
 .co/cache/
 .co/logs/
 .co/history/
+.co/evals/
 co-vibecoding-principles-docs-contexts-all-in-one.md
 todo.md
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# adhd brain data
+backend/adhd_brain/users/
+backend/adhd_brain/thought_parking/
+backend/adhd_brain/*.json
+backend/adhd_brain/*.txt

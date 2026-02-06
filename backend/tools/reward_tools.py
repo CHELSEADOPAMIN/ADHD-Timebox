@@ -6,6 +6,7 @@ import random
 import textwrap
 from typing import List, Optional
 
+from core.paths import resolve_data_root
 try:  # Optional dependency
     import cowsay  # type: ignore
 except Exception:  # pragma: no cover - defensive fallback
@@ -40,8 +41,7 @@ class RewardToolkit:
     """Wrap cowsay reward output and summary logging."""
 
     def __init__(self, brain_dir: Optional[str] = None, log_dir: Optional[str] = None):
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.brain_dir = brain_dir or os.path.join(base_dir, "adhd_brain")
+        self.brain_dir = brain_dir or resolve_data_root()
         self.log_dir = log_dir or os.path.join(self.brain_dir, "logs")
         os.makedirs(self.log_dir, exist_ok=True)
 

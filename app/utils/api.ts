@@ -1,4 +1,6 @@
-const LOCAL_API_BASE = "/api";
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL?.trim() || "http://localhost:8000";
+const API_BASE = `${BACKEND_URL}/api`;
 
 export interface ChatResponse {
   content: string;
@@ -13,9 +15,12 @@ export interface BackendTask {
   title: string;
   start?: string | null;
   end?: string | null;
+  start_at?: string | null;
+  end_at?: string | null;
   type?: string;
   status: string;
   google_event_id?: string | null;
+  sync_status?: "success" | "failed" | "pending" | null;
 }
 
 export interface RecommendationResponse {
@@ -41,19 +46,49 @@ interface TasksResponse {
   };
 }
 
-const withUserHeader = (userId?: string) =>
-  userId ? { "X-User-Id": userId } : {};
+export interface CalendarStatusResponse {
+  connected: boolean;
+  email?: string | null;
+  expires_at?: string | null;
+  message?: string | null;
+  detail?: string | null;
+  last_sync_time?: string | null;
+  last_sync_summary?: {
+    total: number;
+    success: number;
+    failed: number;
+    pending: number;
+  } | null;
+}
+
+export interface FocusStateResponse {
+  status?: string;
+  active_task?: {
+    title?: string;
+    start?: string | null;
+    end?: string | null;
+    remaining_minutes?: number | null;
+    plan_date?: string | null;
+  } | null;
+  progress?: {
+    done: number;
+    total: number;
+  };
+  plan_path?: string | null;
+  now?: string;
+  message?: string;
+  active_window?: string | null;
+  idle_seconds?: number | null;
+}
 
 export const api = {
-  chat: async (message: string, userId?: string): Promise<ChatResponse> => {
-    const res = await fetch(`${LOCAL_API_BASE}/chat`, {
+  chat: async (message: string): Promise<ChatResponse> => {
+    const res = await fetch(`${API_BASE}/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...withUserHeader(userId),
       },
       body: JSON.stringify({ message }),
-      credentials: "include",
     });
     if (!res.ok) {
       throw new Error("Chat failed");
@@ -61,11 +96,8 @@ export const api = {
     return res.json();
   },
 
-  getTasks: async (userId?: string): Promise<BackendTask[]> => {
-    const res = await fetch(`${LOCAL_API_BASE}/tasks`, {
-      headers: withUserHeader(userId),
-      credentials: "include",
-    });
+  getTasks: async (): Promise<BackendTask[]> => {
+    const res = await fetch(`${API_BASE}/tasks`);
     if (!res.ok) {
       throw new Error("Failed to fetch tasks");
     }
@@ -78,17 +110,14 @@ export const api = {
 
   updateTaskStatus: async (
     taskId: string,
-    status: string,
-    userId?: string
+    status: string
   ): Promise<void> => {
-    const res = await fetch(`${LOCAL_API_BASE}/tasks/${taskId}`, {
+    const res = await fetch(`${API_BASE}/tasks/${taskId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        ...withUserHeader(userId),
       },
       body: JSON.stringify({ status }),
-      credentials: "include",
     });
     if (!res.ok) {
       throw new Error("Failed to update task status");
@@ -97,20 +126,89 @@ export const api = {
 
   parkThought: async (
     message: string,
-    thoughtType?: "search" | "memo" | "todo",
-    userId?: string
+    thoughtType?: "search" | "memo" | "todo"
   ): Promise<ParkingResponse> => {
-    const res = await fetch(`${LOCAL_API_BASE}/parking`, {
+    const res = await fetch(`${API_BASE}/parking`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...withUserHeader(userId),
       },
       body: JSON.stringify({ message, thought_type: thoughtType }),
-      credentials: "include",
     });
     if (!res.ok) {
       throw new Error("Failed to park thought");
+    }
+    return res.json();
+  },
+
+  getCalendarStatus: async (): Promise<CalendarStatusResponse> => {
+    const res = await fetch(`${API_BASE}/calendar/status`, {
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      throw new Error("Failed to fetch calendar status");
+    }
+    return res.json();
+  },
+
+  getFocusState: async (): Promise<FocusStateResponse> => {
+    const res = await fetch(`${API_BASE}/focus/state`, {
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      throw new Error("Failed to fetch focus state");
+    }
+    return res.json();
+  },
+
+  syncCalendar: async (date?: string): Promise<any> => {
+    const query = date ? `?date=${encodeURIComponent(date)}` : "";
+    const res = await fetch(`${API_BASE}/calendar/sync${query}`, {
+      method: "POST",
+    });
+    if (!res.ok) {
+      throw new Error("Calendar sync failed");
+    }
+    return res.json();
+  },
+
+  connectGoogleCalendar: async (): Promise<any> => {
+    const res = await fetch(`${API_BASE}/calendar/connect`, {
+      method: "POST",
+    });
+    if (!res.ok) {
+      throw new Error("Failed to start Google Calendar connection");
+    }
+    return res.json();
+  },
+
+  disconnectGoogleCalendar: async (): Promise<any> => {
+    const res = await fetch(`${API_BASE}/calendar/disconnect`, {
+      method: "POST",
+    });
+    if (!res.ok) {
+      throw new Error("Failed to disconnect Google Calendar");
+    }
+    return res.json();
+  },
+
+  downloadIcs: async (date?: string): Promise<Blob> => {
+    const query = date ? `?date=${encodeURIComponent(date)}` : "";
+    const res = await fetch(`${API_BASE}/calendar/ics${query}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      throw new Error("Failed to download ICS");
+    }
+    return res.blob();
+  },
+
+  getGoogleAuthStatus: async (): Promise<any> => {
+    const res = await fetch(`${API_BASE}/auth/google/status`, {
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      throw new Error("Failed to fetch Google auth status");
     }
     return res.json();
   },
