@@ -105,6 +105,7 @@ export function FocusMode() {
     timeRemaining,
     updateTask,
     setShowThoughtParking,
+    clearParkingMessages,
     showThoughtParking,
     userState,
     clearParkingMessages,

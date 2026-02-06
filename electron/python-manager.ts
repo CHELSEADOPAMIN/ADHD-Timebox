@@ -31,6 +31,10 @@ const resolveBackendCommand = (
   };
 
   if (options.isPackaged) {
+    fs.mkdirSync(options.dataDir, { recursive: true });
+    // connectonion writes session/log artifacts under ./.co; in packaged apps
+    // app bundle/resources are read-only, so force a writable working directory.
+    fs.mkdirSync(path.join(options.dataDir, ".co"), { recursive: true });
     const resourcesPath = process.resourcesPath;
     const exeName = process.platform === "win32" ? "adhd-backend.exe" : "adhd-backend";
     const backendPath = path.join(resourcesPath, "backend", exeName);
@@ -40,6 +44,7 @@ const resolveBackendCommand = (
     return {
       command: backendPath,
       args: ["--host", "127.0.0.1", "--port", String(port), "--data-dir", options.dataDir],
+      cwd: options.dataDir,
       env,
     };
   }
@@ -71,11 +76,26 @@ export const startBackend = (options: StartOptions): BackendHandle => {
   const port = options.port ?? DEFAULT_PORT;
   const baseUrl = `http://127.0.0.1:${port}`;
   const { command, args, cwd, env } = resolveBackendCommand(options);
+  const packaged = options.isPackaged;
   const child = spawn(command, args, {
     cwd,
     env,
-    stdio: options.isPackaged ? "ignore" : "inherit",
+    stdio: packaged ? ["ignore", "pipe", "pipe"] : "inherit",
   });
+
+  if (packaged) {
+    const logPath = path.join(options.dataDir, "backend.log");
+    const logStream = fs.createWriteStream(logPath, { flags: "a" });
+    logStream.write(`\n=== Backend start ${new Date().toISOString()} ===\n`);
+    child.stdout?.pipe(logStream);
+    child.stderr?.pipe(logStream);
+    child.once("exit", (code, signal) => {
+      logStream.write(
+        `\n=== Backend exit code=${code ?? "null"} signal=${signal ?? "null"} ===\n`
+      );
+      logStream.end();
+    });
+  }
 
   child.on("error", (error) => {
     console.error("Backend process failed to start:", error);
@@ -91,7 +111,7 @@ export const startBackend = (options: StartOptions): BackendHandle => {
 
 export const waitForBackendReady = async (
   baseUrl: string,
-  timeoutMs = 15000,
+  timeoutMs = 30000,
   intervalMs = 500
 ): Promise<boolean> => {
   const deadline = Date.now() + timeoutMs;

@@ -13,6 +13,10 @@
   ],
   "extraResources": [
     {
+      "from": ".env",
+      "to": "config/default.env"
+    },
+    {
       "from": "resources/backend",
       "to": "backend"
     },

@@ -60,7 +60,6 @@ export function ThoughtParkingSheet() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const authReady = isLoaded && isSignedIn;
   const {
     showThoughtParking,
     setShowThoughtParking,
@@ -90,12 +89,6 @@ export function ThoughtParkingSheet() {
     e.preventDefault();
     const messageText = input.trim();
     if (!messageText || isLoading) return;
-    if (!authReady) {
-      addParkingMessage(
-        createMessage("assistant", "Please sign in to continue.")
-      );
-      return;
-    }
 
     setInput("");
     addParkingMessage(createMessage("user", messageText));
@@ -203,13 +196,13 @@ export function ThoughtParkingSheet() {
                       handleSubmit(e);
                     }
                   }}
-                  disabled={isLoading || !authReady}
+                  disabled={isLoading}
                 />
                 <Button
                   type="submit"
                   size="icon"
                   variant="secondary"
-                  disabled={!input.trim() || isLoading || !authReady}
+                  disabled={!input.trim() || isLoading}
                   className="h-[44px] w-[44px] shrink-0"
                 >
                   <Send className="h-4 w-4" />

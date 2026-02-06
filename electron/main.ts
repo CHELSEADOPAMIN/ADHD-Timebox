@@ -11,6 +11,24 @@ import {
 let mainWindow: BrowserWindow | null = null;
 let backendHandle: BackendHandle | null = null;
 
+const syncBundledEnvToDataDir = (dataDir: string) => {
+  if (!app.isPackaged) return;
+
+  const bundledEnvPath = path.join(process.resourcesPath, "config", "default.env");
+  if (!fs.existsSync(bundledEnvPath)) {
+    console.warn(`Bundled env file not found at ${bundledEnvPath}`);
+    return;
+  }
+
+  const runtimeEnvPath = path.join(dataDir, ".env");
+  try {
+    // MVP behavior: always sync bundled env so end users can run without manual setup.
+    fs.copyFileSync(bundledEnvPath, runtimeEnvPath);
+  } catch (error) {
+    console.error(`Failed to sync bundled env to ${runtimeEnvPath}:`, error);
+  }
+};
+
 const buildFallbackHtml = (message: string, detail?: string) => {
   const safeDetail = detail ? `<pre>${detail}</pre>` : "";
   return `<!doctype html>
@@ -130,6 +148,7 @@ const createWindow = async () => {
 const boot = async () => {
   const dataDir = path.join(app.getPath("userData"), "data");
   fs.mkdirSync(dataDir, { recursive: true });
+  syncBundledEnvToDataDir(dataDir);
 
   backendHandle = startBackend({
     dataDir,

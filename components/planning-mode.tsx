@@ -51,6 +51,21 @@ export function PlanningMode() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [planningMessages, isLoading]);
 
+  const getChatErrorMessage = (error: unknown) => {
+    if (error instanceof Error) {
+      const raw = error.message || "";
+      if (
+        /failed to fetch|networkerror|err_connection_refused/i.test(raw)
+      ) {
+        return "Backend is starting up, please try again in a moment...";
+      }
+      if (raw) {
+        return `Sorry, I encountered an error communicating with the backend. ${raw}`;
+      }
+    }
+    return "Sorry, I encountered an error communicating with the backend.";
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -87,7 +102,7 @@ export function PlanningMode() {
       addPlanningMessage(
         createMessage(
           "assistant",
-          "Sorry, I encountered an error communicating with the backend."
+          getChatErrorMessage(error)
         )
       );
     } finally {

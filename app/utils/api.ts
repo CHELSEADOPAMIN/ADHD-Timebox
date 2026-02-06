@@ -2,6 +2,26 @@ const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL?.trim() || "http://localhost:8000";
 const API_BASE = `${BACKEND_URL}/api`;
 
+const extractErrorMessage = async (res: Response): Promise<string | null> => {
+  try {
+    const data = (await res.json()) as {
+      message?: unknown;
+      detail?: unknown;
+      code?: unknown;
+    };
+    if (!data || typeof data !== "object") return null;
+    const message =
+      typeof data.message === "string" ? data.message.trim() : "";
+    const detail = typeof data.detail === "string" ? data.detail.trim() : "";
+    if (message && detail) return `${message} (${detail})`;
+    if (message) return message;
+    if (detail) return detail;
+    return null;
+  } catch {
+    return null;
+  }
+};
+
 export interface ChatResponse {
   content: string;
   status: string;
@@ -91,7 +111,9 @@ export const api = {
       body: JSON.stringify({ message }),
     });
     if (!res.ok) {
-      throw new Error("Chat failed");
+      const detail = await extractErrorMessage(res);
+      const suffix = detail ? `: ${detail}` : "";
+      throw new Error(`Chat failed${suffix}`);
     }
     return res.json();
   },

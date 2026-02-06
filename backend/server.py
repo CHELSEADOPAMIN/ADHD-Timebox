@@ -47,6 +47,9 @@ def create_app(data_dir: str | None = None) -> FastAPI:
         project_root = os.path.abspath(os.path.join(base_dir, ".."))
         load_dotenv(os.path.join(project_root, ".env"))
         load_dotenv(os.path.join(base_dir, ".env"), override=True)
+        data_dir = os.getenv("ADHD_DATA_DIR")
+        if data_dir:
+            load_dotenv(os.path.join(data_dir, ".env"), override=True)
 
         if not (
             os.getenv("OPENONION_API_KEY")
