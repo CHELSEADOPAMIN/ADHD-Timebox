@@ -13,7 +13,7 @@ from tools.plan_tools_v2 import PlanManager
 from tools.reward_tools import RewardToolkit
 
 
-DEFAULT_MODEL = "co/gemini-2.5-pro"
+DEFAULT_MODEL = "co/gemini-3-pro-preview"
 FINISHED_MARKER = "<<FINISHED>>"
 STATUS_CONTINUE = "CONTINUE"
 STATUS_FINISHED = "FINISHED"

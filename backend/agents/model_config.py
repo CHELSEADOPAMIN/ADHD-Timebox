@@ -15,10 +15,10 @@ def resolve_model(model: Optional[str] = None) -> str:
         return env_model
 
     if os.getenv("OPENONION_API_KEY"):
-        return "co/gemini-2.5-pro"
+        return "co/gemini-3-pro-preview"
     if os.getenv("GEMINI_API_KEY"):
-        return "gemini-2.5-pro"
+        return "gemini-3-pro-preview"
     if os.getenv("OPENAI_API_KEY"):
         return "gpt-4o"
 
-    return "co/gemini-2.5-pro"
+    return "co/gemini-3-pro-preview"

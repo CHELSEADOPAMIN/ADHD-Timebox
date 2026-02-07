@@ -59,7 +59,7 @@ export OPENAI_API_KEY="your_api_key_here"
 
 ```
 
-*(The specific model is configured as `co/gemini-2.5-pro` in `backend/main.py`. Ensure you have access or change it to another model in the code).*
+*(The specific model is configured as `co/gemini-3-pro-preview` in `backend/main.py`. Ensure you have access or change it to another model in the code).*
 
 #### Frontend Auth (Clerk)
 
@@ -106,7 +106,7 @@ A: Make sure you activated your virtual environment and ran `pip install -r requ
 A: Check if `credentials.json` exists. On the first run, you must manually authorize it in the browser.
 
 **Q: How do I change the AI model?**
-A: Open `backend/main_mas.py` (or the specific agent file), find `model="co/gemini-2.5-pro"`, and change it to a model name supported by `connectonion` (e.g., `gpt-4o`, `claude-3-5-sonnet`).
+A: Open `backend/main_mas.py` (or the specific agent file), find `model="co/gemini-3-pro-preview"`, and change it to a model name supported by `connectonion` (e.g., `gpt-4o`, `claude-3-5-sonnet`).
 
 ---
 
@@ -294,7 +294,7 @@ export GEMINI_API_KEY="your_api_key_here"
 # 或
 export OPENAI_API_KEY="your_api_key_here"
 ```
-*(具体使用的模型在 `backend/main.py` 中配置为 `co/gemini-2.5-pro`，请确保你有访问权限或在代码中修改为其他模型)*
+*(具体使用的模型在 `backend/main.py` 中配置为 `co/gemini-3-pro-preview`，请确保你有访问权限或在代码中修改为其他模型)*
 
 ### 4. 启动 Agent
 
@@ -326,7 +326,7 @@ A: 请确保你已激活虚拟环境并运行了 `pip install -r requirements.tx
 A: 请检查 `credentials.json` 是否存在且有效。首次运行需要手动在浏览器中点击授权。
 
 **Q: 如何修改使用的 AI 模型？**
-A: 打开 `backend/main.py` (单体) 或 `backend/agents/orchestrator.py` (MAS)，找到 `model="co/gemini-2.5-pro"` 并修改为你支持的模型名称 (如 `gpt-4o`, `claude-3-5-sonnet` 等，需 `connectonion` 支持)。
+A: 打开 `backend/main.py` (单体) 或 `backend/agents/orchestrator.py` (MAS)，找到 `model="co/gemini-3-pro-preview"` 并修改为你支持的模型名称 (如 `gpt-4o`, `claude-3-5-sonnet` 等，需 `connectonion` 支持)。
 
 ---
 

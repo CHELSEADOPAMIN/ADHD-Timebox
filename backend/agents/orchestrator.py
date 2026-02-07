@@ -17,64 +17,44 @@ from tools.plan_tools_v2 import PlanManager
 
 SYSTEM_PROMPT = """
 You are OrchestratorAgent, the central routing hub of a multi-agent system.
-Your job is to calmly and objectively classify the user's intent.
-All replies must be in English, even if the user writes in another language.
+Your job is to calmly and objectively classify user intent.
+You MUST output in English only.
 
-### Routing rules:
-1. **PLANNER (schedule manager)**
-   - Keywords: schedule, time, delay, move, plan, tomorrow, today, calendar.
-   - Examples: "delay 10 minutes", "move the meeting to the afternoon", "what's left today?"
+### Routing rules
+1. PLANNER (schedule manager)
+- Use for planning/arranging/rescheduling.
+- Keywords: schedule, time, delay, move, plan, tomorrow, today, calendar.
+- Chinese examples: "我想规划今天任务", "帮我安排今天", "把会议推迟10分钟".
 
-2. **FOCUS (Execution Coach)**
-   - Keywords: start, finished, stuck, do not want to do it, distracted, working on it.
-   - Examples: "Start the first task", "I'm done", "This is too hard", "I got distracted."
-2. **FOCUS (execution coach)**
-   - Keywords: start, finished, stuck, don't want to, distracted, working on.
-   - Examples: "start the first task", "I finished it", "this is too hard", "I'm distracted".
+2. FOCUS (execution coach)
+- Use for in-task execution, completion, stuck, distraction while executing.
+- Keywords: start, finished, stuck, distracted, working on it.
+- Chinese examples: "开始第一个任务", "我做完了", "我卡住了", "我走神了".
 
-3. **PARKING (Thought Parking Lot)**
-   - Keywords: search, look up, just thought of an idea, record, I want to know.
-   - Examples: "Look up this Python usage", "I just remembered to buy milk", "Write this down."
-3. **PARKING (thought parking)**
-   - Keywords: search, look up, remember, idea, note, I want to know.
-   - Examples: "look up this Python usage", "I just remembered to buy milk", "note this down".
+3. PARKING (thought parking)
+- Use for lookup/record/idea capture.
+- Keywords: search, look up, remember, idea, note.
+- Chinese examples: "查一下这个", "记一下这个想法", "突然想到一个点子".
 
-### Output format (strict):
-- If intent matches above -> CALL: <AGENT_NAME> | <REASON>
-- If just greeting or unclassifiable -> REPLY: <reply content>
-### Output format (strict):
-- If intent matches -> CALL: <AGENT_NAME> | <REASON>
-- If it's a greeting or unclear -> REPLY: <response>
+### Special rule for "我要做/我想做"
+- If user says "我要做..." / "我想做..." and it sounds like listing what to do,
+  prefer PLANNER when context is unclear.
+- If clearly referring to an existing scheduled task already in execution context,
+  choose FOCUS.
 
-### Example training:
-User: "Push my current task back by 30 minutes"
-Output: CALL: PLANNER | Adjust schedule
-### Training examples:
+### Output format (strict)
+- If intent matches: CALL: <AGENT_NAME> | <REASON>
+- If greeting/unclear: REPLY: <response>
+
+### Examples
 User: "delay the current task by 30 minutes"
 Output: CALL: PLANNER | time adjustment
-
 User: "I'm ready to start coding"
-Output: CALL: FOCUS | Task start
-User: "I am ready to start coding"
 Output: CALL: FOCUS | task start
-
-User: "Help me check the exchange rate"
-Output: CALL: PARKING | External lookup
 User: "look up the exchange rate"
 Output: CALL: PARKING | external search
-
-User: "Hi there"
-Output: REPLY: Hi! I'm your router. Tell me the next action.
 User: "hello"
 Output: REPLY: Hi! Tell me what you want to do next.
-
-User: "I feel tired and don't want to move"
-Output: CALL: FOCUS | Emotional support
-
-### Language Constraint
-You MUST respond ONLY in English. Never use Chinese or any other language.
-User: "I'm tired and don't want to move"
-Output: CALL: FOCUS | emotional support
 """.strip()
 
 STATUS_CONTINUE = "CONTINUE"
@@ -139,13 +119,36 @@ class OrchestratorAgent:  # Note: uses composition instead of inheriting Agent
             print(msg)
             return msg
 
+        # Deterministic override for "我要做/我想做" style starts:
+        # - with existing actionable tasks -> FOCUS
+        # - without tasks -> PLANNER
+        if self._is_do_intent(normalized):
+            has_tasks = self._has_actionable_tasks_today()
+            agent = self.focus_agent if has_tasks else self.planner_agent
+            target = "FOCUS" if has_tasks else "PLANNER"
+            reason = (
+                "existing actionable tasks; start execution"
+                if has_tasks
+                else "no actionable tasks; plan first"
+            )
+            if self.locked_agent and self.locked_agent is not agent:
+                self.locked_agent = None
+            print(f">> [Router] Intent override to {target}... Reason: {reason}")
+            envelope = self._safe_handle(agent, user_input)
+            content = envelope.get("content", "")
+            self._update_lock(agent, envelope)
+            self.last_agent = self._agent_name(agent)
+            print(content)
+            return content
+
         # Fast path: locked agent consumes input directly
         if self.locked_agent:
             print(">> [Session Lock] Forwarding to locked agent ...")
-            envelope = self._safe_handle(self.locked_agent, user_input)
+            active_agent = self.locked_agent
+            envelope = self._safe_handle(active_agent, user_input)
             content = envelope.get("content", "")
-            self._update_lock(self.locked_agent, envelope)
-            self.last_agent = self._agent_name(self.locked_agent)
+            self._update_lock(active_agent, envelope)
+            self.last_agent = self._agent_name(active_agent)
             # final_content = self._maybe_attach_daily_reward(content) # Removed auto-reward
             print(content)
             return content
@@ -287,6 +290,32 @@ class OrchestratorAgent:  # Note: uses composition instead of inheriting Agent
             "today done",
         ]
         return any(key in normalized_input for key in keywords)
+
+    def _is_do_intent(self, normalized_input: str) -> bool:
+        patterns = [
+            "我要做",
+            "我想做",
+            "我打算做",
+            "i want to do",
+            "i need to do",
+            "i'm going to do",
+            "i am going to do",
+        ]
+        return any(p in normalized_input for p in patterns)
+
+    def _has_actionable_tasks_today(self) -> bool:
+        try:
+            today = datetime.date.today().isoformat()
+            tasks, _, err = self.plan_manager._load_tasks(today, False)
+            if err or not isinstance(tasks, list) or not tasks:
+                return False
+            for task in tasks:
+                status = str(task.get("status") or "").lower()
+                if status not in {"done", "completed", "complete"}:
+                    return True
+            return False
+        except Exception:
+            return False
 
     def _maybe_attach_daily_reward(self, content: str) -> str:
         reward = self._auto_reward_if_completed()
