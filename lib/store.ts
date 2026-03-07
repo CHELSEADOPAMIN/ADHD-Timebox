@@ -1,8 +1,18 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import {
+  appendPlanningMessage,
+  archiveSession,
+  createSessionFromMessage,
+  startFocusForSession,
+  type SessionEndReason,
+  type SessionMessage,
+  type SessionRecord,
+} from "@/lib/session-record";
 
 // User states as defined in the spec
 export type UserState = "planning" | "focusing" | "interrupted" | "resting";
+export type AppView = "main" | "history";
 
 export interface Task {
   id: string;
@@ -40,6 +50,14 @@ export interface ChatMessage {
   channel: "planning" | "parking";
 }
 
+const toSessionMessage = (message: ChatMessage): SessionMessage => ({
+  id: message.id,
+  role: message.role,
+  content: message.content,
+  timestamp: message.timestamp,
+  channel: "planning",
+});
+
 interface AppState {
   // Hydration
   hasHydrated: boolean;
@@ -52,6 +70,8 @@ interface AppState {
   // User state
   userState: UserState;
   setUserState: (state: UserState) => void;
+  appView: AppView;
+  setAppView: (view: AppView) => void;
 
   // Current task
   currentTask: Task | null;
@@ -71,10 +91,15 @@ interface AppState {
   // Chat messages
   planningMessages: ChatMessage[];
   parkingMessages: ChatMessage[];
+  activeSession: SessionRecord | null;
+  archivedSessions: SessionRecord[];
   addPlanningMessage: (message: ChatMessage) => void;
   addParkingMessage: (message: ChatMessage) => void;
   clearPlanningMessages: () => void;
   clearParkingMessages: () => void;
+  setActiveSessionTask: (task: Task) => void;
+  archiveActiveSession: (endReason: SessionEndReason, endedAt: Date) => void;
+  clearActiveSession: () => void;
 
   // Timer
   timeRemaining: number; // in seconds
@@ -113,6 +138,8 @@ export const useAppStore = create<AppState>()(
       // User state
       userState: "planning",
       setUserState: (userState) => set({ userState }),
+      appView: "main",
+      setAppView: (appView) => set({ appView }),
 
       // Current task
       currentTask: null,
@@ -141,9 +168,18 @@ export const useAppStore = create<AppState>()(
       // Chat
       planningMessages: [],
       parkingMessages: [],
+      activeSession: null,
+      archivedSessions: [],
       addPlanningMessage: (message) =>
         set((state) => ({
           planningMessages: [...state.planningMessages, message],
+          activeSession: state.activeSession
+            ? appendPlanningMessage(state.activeSession, toSessionMessage(message))
+            : createSessionFromMessage(
+                message.content,
+                message.timestamp,
+                toSessionMessage(message)
+              ),
         })),
       addParkingMessage: (message) =>
         set((state) => ({
@@ -151,6 +187,39 @@ export const useAppStore = create<AppState>()(
         })),
       clearPlanningMessages: () => set({ planningMessages: [] }),
       clearParkingMessages: () => set({ parkingMessages: [] }),
+      setActiveSessionTask: (task) =>
+        set((state) => ({
+          activeSession: state.activeSession
+            ? startFocusForSession(state.activeSession, {
+                id: task.id,
+                title: task.title,
+                description: task.description,
+                duration: task.duration,
+                status: task.status,
+                startedAt: task.startedAt,
+                completedAt: task.completedAt,
+              })
+            : null,
+        })),
+      archiveActiveSession: (endReason, endedAt) =>
+        set((state) => {
+          if (!state.activeSession) {
+            return state;
+          }
+
+          const nextArchivedSession = archiveSession(
+            state.activeSession,
+            endReason,
+            endedAt
+          );
+
+          return {
+            activeSession: null,
+            archivedSessions: [nextArchivedSession, ...state.archivedSessions],
+            planningMessages: [],
+          };
+        }),
+      clearActiveSession: () => set({ activeSession: null, planningMessages: [] }),
 
       // Timer
       timeRemaining: 0,
@@ -178,6 +247,8 @@ export const useAppStore = create<AppState>()(
           timeRemaining: 0,
           isTimerRunning: false,
           userState: "planning",
+          appView: "main",
+          activeSession: null,
         }),
     }),
     {
@@ -189,6 +260,10 @@ export const useAppStore = create<AppState>()(
           hasCompletedOnboarding: state.hasCompletedOnboarding ?? false,
           tasks: Array.isArray(state.tasks) ? state.tasks : [],
           thoughts: Array.isArray(state.thoughts) ? state.thoughts : [],
+          activeSession: state.activeSession ?? null,
+          archivedSessions: Array.isArray(state.archivedSessions)
+            ? state.archivedSessions
+            : [],
         };
       },
       partialize: (state) => ({
@@ -199,6 +274,8 @@ export const useAppStore = create<AppState>()(
           return status !== "completed" && status !== "done" && status !== "complete";
         }),
         thoughts: state.thoughts,
+        activeSession: state.activeSession,
+        archivedSessions: state.archivedSessions,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);

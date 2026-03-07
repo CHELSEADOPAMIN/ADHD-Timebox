@@ -30,18 +30,12 @@ export function PlanningMode() {
     planningMessages,
     addPlanningMessage,
     setTasks,
-    clearPlanningMessages,
   } = useAppStore();
 
   // ✅ IME 处理：避免 Enter 结束组词时直接触发发送
   const [isComposing, setIsComposing] = useState(false);
   const lastCompositionEndRef = useRef(0);
   const shouldBlockEnterSend = () => Date.now() - lastCompositionEndRef.current < 80;
-
-  useEffect(() => {
-    // Always start with a clean chat on mount (no history across devices).
-    clearPlanningMessages();
-  }, [clearPlanningMessages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

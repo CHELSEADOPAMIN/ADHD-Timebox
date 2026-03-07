@@ -14,6 +14,7 @@ import { OnboardingDialog } from "./onboarding-dialog";
 import { Sidebar } from "./sidebar";
 import { LogoLockup } from "./logo-lockup";
 import { CalendarModal } from "./calendar-modal";
+import { HistoryMode } from "./history-mode";
 
 export function AppShell() {
   const {
@@ -22,6 +23,8 @@ export function AppShell() {
     hasHydrated,
     setHasHydrated,
     setTasks,
+    appView,
+    archivedSessions,
   } = useAppStore();
 
   useEffect(() => {
@@ -59,6 +62,10 @@ export function AppShell() {
   }
 
   const renderCurrentMode = () => {
+    if (appView === "history") {
+      return <HistoryMode sessions={archivedSessions} />;
+    }
+
     console.log("AppShell rendering mode. userState:", userState);
     switch (userState) {
       case "planning":

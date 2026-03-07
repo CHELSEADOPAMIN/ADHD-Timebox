@@ -95,6 +95,7 @@ export function CalendarModal() {
     setTimeRemaining,
     setIsTimerRunning,
     setUserState,
+    setActiveSessionTask,
     googleCalendarConnected,
     setGoogleCalendarConnected,
     lastSyncTime,
@@ -324,7 +325,9 @@ export function CalendarModal() {
   const handleStartTask = (task: Task) => {
     const startedAt = new Date();
     updateTask(task.id, { status: "in-progress", startedAt });
-    setCurrentTask({ ...task, status: "in-progress", startedAt });
+    const nextTask: Task = { ...task, status: "in-progress", startedAt };
+    setCurrentTask(nextTask);
+    setActiveSessionTask(nextTask);
     setTimeRemaining(task.duration * 60);
     setIsTimerRunning(true);
     setUserState("focusing");

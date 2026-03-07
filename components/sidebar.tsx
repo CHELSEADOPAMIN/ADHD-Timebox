@@ -5,6 +5,7 @@ import React, { useState, useRef } from "react";
 import { useAppStore, type Task } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import {
+  Archive,
   Clock,
   Circle,
   CheckCircle2,
@@ -274,6 +275,9 @@ export function Sidebar() {
     setTimeRemaining,
     setIsTimerRunning,
     setCalendarModalOpen,
+    setActiveSessionTask,
+    appView,
+    setAppView,
   } = useAppStore();
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -367,6 +371,11 @@ export function Sidebar() {
       status: "in-progress",
       startedAt,
     });
+    setActiveSessionTask({
+      ...task,
+      status: "in-progress",
+      startedAt,
+    });
     setTimeRemaining(task.duration * 60);
     setIsTimerRunning(true);
     setUserState("focusing");
@@ -439,6 +448,19 @@ export function Sidebar() {
       {/* Expanded state - full content */}
       {!isCollapsed && (
         <>
+          <div className="border-b border-border/50 p-3">
+            <Button
+              variant={appView === "history" ? "default" : "outline"}
+              onClick={() =>
+                setAppView(appView === "history" ? "main" : "history")
+              }
+              className="w-full justify-between"
+            >
+              <span>History / Archive</span>
+              <Archive className="h-4 w-4" />
+            </Button>
+          </div>
+
           {/* Scrollable sections area */}
           <div className="flex-1 overflow-y-auto">
             {/* Current / Tasks Section */}

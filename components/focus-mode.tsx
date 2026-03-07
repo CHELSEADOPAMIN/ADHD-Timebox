@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppStore } from "@/lib/store";
 import { TimerDisplay } from "./timer-display";
+import { SessionPlanningPanel } from "./session-planning-panel";
 import { getRandomReward } from "@/lib/rewards";
 import {
   ArrowRight,
@@ -114,6 +115,8 @@ export function FocusMode() {
     clearParkingMessages,
     showThoughtParking,
     userState,
+    activeSession,
+    archiveActiveSession,
   } = useAppStore();
 
   const handleActivity = useCallback(() => {
@@ -383,6 +386,7 @@ export function FocusMode() {
         startedAt: undefined,
         completedAt: undefined,
       });
+      archiveActiveSession("completed", new Date());
       // Show end-of-tymebox ritual (handled by parent via state)
       setUserState("interrupted");
     }
@@ -394,6 +398,7 @@ export function FocusMode() {
     setUserState,
     updateTask,
     setCurrentTask,
+    archiveActiveSession,
   ]);
 
   const handlePause = () => {
@@ -420,6 +425,7 @@ export function FocusMode() {
         completedAt: undefined,
       });
     }
+    archiveActiveSession("stopped", new Date());
     setIsTimerRunning(false);
     setUserState("interrupted");
   };
@@ -647,6 +653,8 @@ export function FocusMode() {
         <p className="mt-8 text-center text-xs text-muted-foreground/60">
           It's okay to pause. It's okay to stop. You're doing great.
         </p>
+
+        {activeSession && <SessionPlanningPanel session={activeSession} />}
       </div>
     </div>
   );
