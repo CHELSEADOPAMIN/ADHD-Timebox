@@ -167,3 +167,11 @@ export interface DecisionAgentContext {
   currentTime: string;
   preferLowCognitiveLoad?: boolean;
 }
+
+export interface SessionRecord {
+  id: string;
+  date: string;
+  durationMinutes: number;
+  outcome: "completed" | "abandoned" | "interrupted";
+  taskId?: string;
+}

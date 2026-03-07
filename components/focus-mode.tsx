@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { api } from "@/app/utils/api";
+import { api, sessionApi } from "@/app/utils/api";
+import type { SessionState, SessionHistoryEntry } from "@/app/utils/api";
+import type { UserState } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppStore } from "@/lib/store";
@@ -97,6 +99,10 @@ export function FocusMode() {
   const [thoughtSaving, setThoughtSaving] = useState(false);
   const [thoughtError, setThoughtError] = useState<string | null>(null);
 
+  const [sessionState, setSessionState] = useState<SessionState | null>(null);
+  const [sessionHistory, setSessionHistory] = useState<SessionHistoryEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
   const lastActivityRef = useRef(Date.now());
   const distractionStartRef = useRef<number | null>(null);
   const lastDistractionKeyRef = useRef<string | null>(null);
@@ -179,6 +185,108 @@ export function FocusMode() {
     },
     [setShowThoughtParking]
   );
+
+    // 获取会话状态
+  const fetchSessions = useCallback(async () => {
+    try {
+      // 同步到 store
+      const data = await sessionApi.getSessions();
+      setSessionState(data.current || null);
+      setSessionHistory(data.history);
+
+        if (data.current) {
+          // backend session statuses don\'t line up with our frontend user states
+          const mapStatus = (s: SessionState['status']): UserState => {
+            switch (s) {
+              case 'running':
+              case 'paused':
+                return 'focusing';
+              case 'idle':
+                return 'planning';
+              case 'completed':
+              case 'abandoned':
+                return 'interrupted';
+            }
+          };
+
+          setUserState(mapStatus(data.current.status));
+          setIsTimerRunning(data.current.status === 'running');
+
+          const task = data.current.active_task;
+          if (task && task.id) {
+            setCurrentTask({
+              id: task.id,
+              title: task.title ?? '',
+              duration: task.duration_minutes ?? 0,
+              createdAt: new Date(),
+              status: 'in-progress',
+            });
+          }
+        }
+
+    } catch (error) {
+      console.error("Failed to fetch sessions:", error);
+    }
+  }, [setUserState, setIsTimerRunning, setCurrentTask]);
+ 
+  // 启动会话
+  const handleStartSession = useCallback(async (taskId: string | null, duration: number) => {
+    setIsLoading(true);
+    try {
+      await sessionApi.startSession(taskId, duration);
+      await fetchSessions();
+    } catch (error) {
+      console.error("Failed to start session:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchSessions]);
+ 
+  // 暂停会话
+  const handlePauseSession = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await sessionApi.pauseSession();
+      await fetchSessions();
+    } catch (error) {
+      console.error("Failed to pause session:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchSessions]);
+ 
+  // 恢复会话
+  const handleResumeSession = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await sessionApi.resumeSession();
+      await fetchSessions();
+    } catch (error) {
+      console.error("Failed to resume session:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchSessions]);
+ 
+  // 放弃会话
+  const handleAbandonSession = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await sessionApi.abandonSession("User abandoned");
+      await fetchSessions();
+    } catch (error) {
+      console.error("Failed to abandon session:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchSessions]);
+ 
+  // 初始化加载
+  useEffect(() => {
+    fetchSessions();
+    const interval = setInterval(fetchSessions, 5000); // 每5秒同步一次
+    return () => clearInterval(interval);
+  }, [fetchSessions]);
 
   useEffect(() => {
     const events = ["mousemove", "keydown", "click", "scroll", "touchstart"];

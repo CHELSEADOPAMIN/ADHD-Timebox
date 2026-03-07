@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from api.routes import auth, calendar, chat, events, focus, health, parking, tasks
+from api.routes import auth, calendar, chat, events, focus, health, parking, tasks, sessions
 from core.events import build_idle_handler
 from core.state import app_state
 from tools.idle_watcher import IdleWatcher
@@ -35,6 +35,7 @@ def create_app(data_dir: str | None = None) -> FastAPI:
     app.include_router(health.router)
     app.include_router(chat.router)
     app.include_router(tasks.router)
+    app.include_router(sessions.router)
     app.include_router(events.router)
     app.include_router(focus.router)
     app.include_router(auth.router)

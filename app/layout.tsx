@@ -1,6 +1,6 @@
 import React from "react";
 import type { Metadata, Viewport } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
+// ClerkProvider will be injected by AuthGate (client component)
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -44,7 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased">
-        <ClerkProvider>{children}</ClerkProvider>
+        {children}
       </body>
     </html>
   );

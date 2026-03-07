@@ -1,6 +1,8 @@
 import { app, BrowserWindow } from "electron";
 import fs from "fs";
 import path from "path";
+import { ipcMain } from "electron";
+
 import {
   startBackend,
   stopBackend,
@@ -179,4 +181,23 @@ app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
+});
+
+
+const userDataPath = app.getPath("userData");
+const sessionsFile = path.join(userDataPath, "sessions.json");
+ 
+ipcMain.handle('save-session', async (_, session) => {
+  let sessions = [];
+  if (fs.existsSync(sessionsFile)) {
+    sessions = JSON.parse(fs.readFileSync(sessionsFile, 'utf-8'));
+  }
+  sessions.push(session);
+  fs.writeFileSync(sessionsFile, JSON.stringify(sessions, null, 2));
+  return { success: true };
+});
+ 
+ipcMain.handle('load-sessions', async () => {
+  if (!fs.existsSync(sessionsFile)) return [];
+  return JSON.parse(fs.readFileSync(sessionsFile, 'utf-8'));
 });

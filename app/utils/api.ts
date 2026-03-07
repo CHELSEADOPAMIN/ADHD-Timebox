@@ -235,3 +235,108 @@ export const api = {
     return res.json();
   },
 };
+
+// ============================================
+// Session Management Types
+// ============================================
+ 
+export interface SessionState {
+  status: "idle" | "running" | "paused" | "completed" | "abandoned";
+  active_task?: {
+    id?: string;
+    title?: string;
+    duration_minutes?: number;
+    remaining_seconds?: number;
+  } | null;
+  duration_minutes: number;
+  remaining_seconds: number;
+  started_at?: string;
+  paused_at?: string;
+}
+ 
+export interface SessionHistoryEntry {
+  id: string;
+  date: string;
+  task_id?: string;
+  task_title?: string;
+  duration_minutes: number;
+  actual_minutes: number;
+  outcome: "completed" | "abandoned" | "interrupted";
+  ended_at: string;
+  reason?: string;
+}
+ 
+export interface SessionsResponse {
+  current?: SessionState | null;
+  history: SessionHistoryEntry[];
+}
+ 
+// Session Management Methods
+export const sessionApi = {
+  getSessions: async (): Promise<SessionsResponse> => {
+    const res = await fetch(`${API_BASE}/sessions`);
+    if (!res.ok) throw new Error("Failed to fetch sessions");
+    return res.json();
+  },
+ 
+  startSession: async (
+    taskId: string | null,
+    durationMinutes: number
+  ): Promise<{ success: boolean; session: SessionState }> => {
+    const res = await fetch(`${API_BASE}/sessions/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        task_id: taskId,
+        duration_minutes: durationMinutes,
+      }),
+    });
+    if (!res.ok) throw new Error("Failed to start session");
+    return res.json();
+  },
+ 
+  pauseSession: async (
+    reason?: string
+  ): Promise<{ success: boolean; session: SessionState }> => {
+    const res = await fetch(`${API_BASE}/sessions/pause`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason }),
+    });
+    if (!res.ok) throw new Error("Failed to pause session");
+    return res.json();
+  },
+ 
+  resumeSession: async (): Promise<{ success: boolean; session: SessionState }> => {
+    const res = await fetch(`${API_BASE}/sessions/resume`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error("Failed to resume session");
+    return res.json();
+  },
+ 
+  abandonSession: async (
+    reason?: string
+  ): Promise<{ success: boolean; history_entry: SessionHistoryEntry }> => {
+    const res = await fetch(`${API_BASE}/sessions/abandon`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason }),
+    });
+    if (!res.ok) throw new Error("Failed to abandon session");
+    return res.json();
+  },
+ 
+  completeSession: async (): Promise<{
+    success: boolean;
+    history_entry: SessionHistoryEntry;
+  }> => {
+    const res = await fetch(`${API_BASE}/sessions/complete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error("Failed to complete session");
+    return res.json();
+  },
+};
