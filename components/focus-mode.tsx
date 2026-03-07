@@ -108,7 +108,6 @@ export function FocusMode() {
     clearParkingMessages,
     showThoughtParking,
     userState,
-    clearParkingMessages,
   } = useAppStore();
 
   const handleActivity = useCallback(() => {

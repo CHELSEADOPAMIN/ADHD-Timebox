@@ -11,6 +11,7 @@ from starlette.concurrency import run_in_threadpool
 
 from api.dependencies import get_app_state, get_user_id
 from api.errors import error_response
+from core.llm_errors import classify_llm_error
 from core.events import enqueue_event
 
 router = APIRouter()
@@ -76,6 +77,10 @@ async def chat(payload: ChatRequest, state=Depends(get_app_state), user_id=Depen
     try:
         content = await run_in_threadpool(orchestrator.route, message)
     except Exception as exc:
+        classified = classify_llm_error(exc)
+        if classified is not None:
+            status_code, code, error_message, detail = classified
+            return error_response(status_code, code, error_message, detail)
         return error_response(500, "ORCHESTRATOR_ERROR", "Chat processing failed", str(exc))
 
     after_mtime, newest_path = _latest_plan_snapshot(plan_dir)
