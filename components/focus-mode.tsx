@@ -21,6 +21,12 @@ const IDLE_THRESHOLD_SECONDS = 120;
 const DISTRACTION_THRESHOLD_MS = 30 * 1000;
 const FOCUS_POLL_INTERVAL_MS = 15000;
 const INTERVENTION_COOLDOWN_MS = 60 * 1000;
+// Temporary testing switch:
+// default OFF so distraction prompts come from backend SSE/agent logic only.
+const ENABLE_FRONTEND_FALLBACK_DETECTION =
+  process.env.NEXT_PUBLIC_ENABLE_FRONTEND_DETECTION === "1";
+const EVENTS_URL =
+  `${process.env.NEXT_PUBLIC_BACKEND_URL?.trim() || "http://localhost:8000"}/api/events`;
 
 const GENTLE_NUDGES = [
   "Hey, mind wandered a little?",
@@ -149,9 +155,11 @@ export function FocusMode() {
         key?: string | null;
         label?: string | null;
         idleSeconds?: number | null;
+        customMessage?: string | null;
       }
     ) => {
       const message =
+        options?.customMessage?.trim() ||
         GENTLE_NUDGES[Math.floor(Math.random() * GENTLE_NUDGES.length)];
       setInterventionReason(reason);
       setInterventionMessage(message);
@@ -220,6 +228,68 @@ export function FocusMode() {
   }, [currentTask?.id]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (userState !== "focusing" || !isTimerRunning || !currentTask) {
+      return;
+    }
+
+    const source = new EventSource(EVENTS_URL);
+
+    const handleDistraction = (event: MessageEvent<string>) => {
+      const now = Date.now();
+      if (now - lastInterventionRef.current < INTERVENTION_COOLDOWN_MS) return;
+
+      try {
+        const payload = JSON.parse(event.data) as {
+          type?: string;
+          message?: string;
+          window?: string;
+        };
+
+        const eventType = (payload?.type || "").toLowerCase();
+        const windowText =
+          typeof payload?.window === "string" ? payload.window : null;
+        const match = findDistraction(windowText);
+        const reason = eventType === "idle_alert" ? "idle" : "distraction";
+        const customMessage =
+          typeof payload?.message === "string" ? payload.message : null;
+
+        triggerIntervention(reason, {
+          windowText,
+          key: match?.key ?? null,
+          label: match?.label ?? null,
+          customMessage,
+        });
+      } catch (error) {
+        console.error("Failed to parse distraction event:", error);
+      }
+    };
+
+    const handleError = () => {
+      // Keep polling fallback active; SSE reconnect behavior is browser-managed.
+      console.warn("Distraction event stream disconnected; polling fallback remains active.");
+    };
+
+    source.addEventListener(
+      "distraction",
+      handleDistraction as EventListener
+    );
+    source.addEventListener("error", handleError as EventListener);
+
+    return () => {
+      source.removeEventListener(
+        "distraction",
+        handleDistraction as EventListener
+      );
+      source.removeEventListener("error", handleError as EventListener);
+      source.close();
+    };
+  }, [userState, isTimerRunning, currentTask?.id, triggerIntervention]);
+
+  useEffect(() => {
+    if (!ENABLE_FRONTEND_FALLBACK_DETECTION) {
+      return;
+    }
     if (!isTimerRunning || showIntervention || showThoughtParking || !currentTask) {
       return;
     }
@@ -577,35 +647,6 @@ export function FocusMode() {
         <p className="mt-8 text-center text-xs text-muted-foreground/60">
           It's okay to pause. It's okay to stop. You're doing great.
         </p>
-
-        {/* DEBUG TOOLS - TO BE REMOVED */}
-        <div className="mt-8 flex flex-wrap justify-center gap-2 border-t border-white/10 pt-4 opacity-50 hover:opacity-100">
-          <p className="w-full text-center text-[10px] uppercase text-muted-foreground">Debug Tools</p>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-6 text-[10px]"
-            onClick={() => triggerIntervention("idle", { idleSeconds: 150 })}
-          >
-            Sim Idle
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-6 text-[10px]"
-            onClick={() => triggerIntervention("distraction", { windowText: "YouTube - Chrome", key: "youtube", label: "YouTube" })}
-          >
-            Sim YouTube
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-6 text-[10px]"
-            onClick={() => triggerIntervention("distraction", { windowText: "Netflix - Safari", key: "netflix", label: "Netflix" })}
-          >
-            Sim Netflix
-          </Button>
-        </div>
       </div>
     </div>
   );

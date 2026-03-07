@@ -12,7 +12,7 @@ from tools.plan_tools_v2 import PlanManager
 from tools.reward_tools import RewardToolkit
 
 
-DEFAULT_MODEL = "co/gemini-2.5-pro"
+DEFAULT_MODEL = "co/gemini-3-pro-preview"
 
 SUMMARY_SYSTEM_PROMPT = """
 You are the user's epic bard and hype man.
@@ -112,7 +112,9 @@ class RewardAgent:
     def _locate_plan_path(self) -> Optional[str]:
         """Prefer today's plan; fall back to the most recent daily_tasks file."""
         today = datetime.date.today().isoformat()
-        today_path = os.path.join(self.plan_manager.plan_dir, f"daily_tasks_{today}.json")
+        today_path = os.path.join(
+            self.plan_manager.plan_dir, f"daily_tasks_{today}.json"
+        )
         if os.path.exists(today_path):
             return today_path
         candidates = sorted(

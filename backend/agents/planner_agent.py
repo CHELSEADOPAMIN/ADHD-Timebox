@@ -16,7 +16,7 @@ from agents.model_config import resolve_model
 from tools.plan_tools_v2 import PlanManager
 
 
-DEFAULT_MODEL = "co/gemini-2.5-pro"
+DEFAULT_MODEL = "co/gemini-3-pro-preview"
 FINISHED_MARKER = "<<FINISHED>>"
 STATUS_CONTINUE = "CONTINUE"
 STATUS_FINISHED = "FINISHED"
